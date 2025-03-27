@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku_app/avatar_wrapper.dart';
 
 class Header extends StatelessWidget {
   final Function toggleTheme;
@@ -32,21 +33,6 @@ class Header extends StatelessWidget {
                 child: Icon(Icons.arrow_back, color: textColor),
               ),
               const SizedBox(width: 12),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: colorScheme.primary,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.tag, size: 16, color: textColor),
-                    const SizedBox(width: 4),
-                    Text('TheSudoku', style: TextStyle(color: textColor)),
-                  ],
-                ),
-              ),
             ],
           ),
           Row(
@@ -73,23 +59,7 @@ class Header extends StatelessWidget {
                 child: Icon(Icons.pause, color: textColor),
               ),
               const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.settings, color: textColor),
-              ),
-              const SizedBox(width: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: colorScheme.surface,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.notifications, color: textColor),
-              ),
+              AvatarWrapper(isDarkMode: isDarkMode)
             ],
           ),
         ],

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:sudoku_app/header.dart';
-import 'package:sudoku_app/bottom_bar.dart';
 import 'package:sudoku_app/sudoku_game_model.dart';
 
 class SudokuGameScreen extends StatefulWidget {
@@ -56,9 +55,6 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
             ),
             _buildSudokuBoard(),
             _buildKeypad(),
-            BottomBar(
-              isDarkMode: widget.isDarkMode,
-            ),
           ],
         ),
       ),
