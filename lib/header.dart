@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku_app/avatar_wrapper.dart';
 
 class Header extends StatelessWidget {
   final Function toggleTheme;
@@ -19,22 +18,8 @@ class Header extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: colorScheme.primary.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Icon(Icons.arrow_back, color: textColor),
-              ),
-              const SizedBox(width: 12),
-            ],
-          ),
           Row(
             children: [
               GestureDetector(
@@ -59,7 +44,6 @@ class Header extends StatelessWidget {
                 child: Icon(Icons.pause, color: textColor),
               ),
               const SizedBox(width: 8),
-              AvatarWrapper(isDarkMode: isDarkMode)
             ],
           ),
         ],
