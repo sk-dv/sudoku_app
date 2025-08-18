@@ -77,85 +77,94 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
 
     return Expanded(
       child: Center(
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: Container(
-            margin: const EdgeInsets.all(16.0),
-            decoration: BoxDecoration(
-              color: colorScheme.surface,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [
-                if (!widget.isDarkMode)
+        child: Transform(
+          alignment: Alignment.center,
+          transform: Matrix4.identity()
+            ..setEntry(3, 2, 0.001) // perspectiva
+            ..rotateX(-0.3) // rotación en X para efecto isométrico
+            ..rotateY(0.1), // ligera rotación en Y
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: Container(
+              margin: const EdgeInsets.all(16.0),
+              decoration: BoxDecoration(
+                color: colorScheme.surface,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.05),
-                    blurRadius: 10,
-                    spreadRadius: 1,
+                    color: Colors.black.withOpacity(0.3),
+                    blurRadius: 20,
+                    spreadRadius: 2,
+                    offset: const Offset(
+                        8, 12), // sombra que refuerza la perspectiva
                   ),
-              ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.all(2.0),
-              child: GridView.builder(
-                physics: const NeverScrollableScrollPhysics(),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 9,
-                ),
-                itemCount: 81,
-                itemBuilder: (context, index) {
-                  final row = index ~/ 9;
-                  final col = index % 9;
+                ],
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(2.0),
+                child: GridView.builder(
+                  physics: const NeverScrollableScrollPhysics(),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 9,
+                  ),
+                  itemCount: 81,
+                  itemBuilder: (context, index) {
+                    final row = index ~/ 9;
+                    final col = index % 9;
 
-                  // Determinar color de fondo según selección y resaltado
-                  Color cellColor = colorScheme.surface;
-                  if (_gameModel.isSelected[row][col]) {
-                    cellColor = highlightColor;
-                  } else if (_gameModel.isHighlighted[row][col]) {
-                    cellColor = colorScheme.primary.withOpacity(0.3);
-                  }
+                    // Determinar color de fondo según selección y resaltado
+                    Color cellColor = colorScheme.surface;
+                    if (_gameModel.isSelected[row][col]) {
+                      cellColor = highlightColor;
+                    } else if (_gameModel.isHighlighted[row][col]) {
+                      cellColor = colorScheme.primary.withOpacity(0.3);
+                    }
 
-                  // Determinar diseño de borde para crear líneas de subcuadrículas
-                  BorderSide rightBorder =
-                      BorderSide(color: borderColor, width: 1);
-                  BorderSide bottomBorder =
-                      BorderSide(color: borderColor, width: 1);
+                    // Determinar diseño de borde para crear líneas de subcuadrículas
+                    BorderSide rightBorder =
+                        BorderSide(color: borderColor, width: 1);
+                    BorderSide bottomBorder =
+                        BorderSide(color: borderColor, width: 1);
 
-                  // Bordes más gruesos para las subcuadrículas
-                  if (col % 3 == 2 && col < 8) {
-                    rightBorder = BorderSide(color: highlightColor, width: 2);
-                  }
-                  if (row % 3 == 2 && row < 8) {
-                    bottomBorder = BorderSide(color: highlightColor, width: 2);
-                  }
+                    // Bordes más gruesos para las subcuadrículas
+                    if (col % 3 == 2 && col < 8) {
+                      rightBorder = BorderSide(color: highlightColor, width: 2);
+                    }
+                    if (row % 3 == 2 && row < 8) {
+                      bottomBorder =
+                          BorderSide(color: highlightColor, width: 2);
+                    }
 
-                  return GestureDetector(
-                    onTap: () => _selectCell(row, col),
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: cellColor,
-                        border: Border(
-                          right: rightBorder,
-                          bottom: bottomBorder,
+                    return GestureDetector(
+                      onTap: () => _selectCell(row, col),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: cellColor,
+                          border: Border(
+                            right: rightBorder,
+                            bottom: bottomBorder,
+                          ),
+                        ),
+                        child: Center(
+                          child: _gameModel.board[row][col] != 0
+                              ? Text(
+                                  '${_gameModel.board[row][col]}',
+                                  style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold,
+                                    color: _gameModel.isErrorCell[row][col]
+                                        ? Colors.red
+                                        : _gameModel.isOriginal[row][col]
+                                            ? textColor
+                                            : accentColor,
+                                  ),
+                                )
+                              : null,
                         ),
                       ),
-                      child: Center(
-                        child: _gameModel.board[row][col] != 0
-                            ? Text(
-                                '${_gameModel.board[row][col]}',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: _gameModel.isErrorCell[row][col]
-                                      ? Colors.red
-                                      : _gameModel.isOriginal[row][col]
-                                          ? textColor
-                                          : accentColor,
-                                ),
-                              )
-                            : null,
-                      ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
             ),
           ),
