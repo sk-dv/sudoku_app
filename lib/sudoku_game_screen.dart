@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:sudoku_app/header.dart';
+import 'package:sudoku_app/sudoku_game.dart';
 import 'package:sudoku_app/sudoku_game_model.dart';
 
 class SudokuGameScreen extends StatefulWidget {
   final Function toggleTheme;
   final bool isDarkMode;
+  final SudokuGame game;
 
   const SudokuGameScreen({
     super.key,
     required this.toggleTheme,
     required this.isDarkMode,
+    required this.game,
   });
 
   @override
@@ -22,7 +25,8 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
   @override
   void initState() {
     super.initState();
-    _gameModel = SudokuGameModel.initialize();
+    print(widget.game.toString());
+    _gameModel = SudokuGameModel.fromSudokuGame(sudokuGame: widget.game);
   }
 
   void _updateGameModel(SudokuGameModel newModel) {
