@@ -17,11 +17,11 @@ class SudokuRepository {
     try {
       final response = await http.get(
         Uri.parse(
-          '${const String.fromEnvironment('SUDOKU_API_URL')}/api/game?iterations=$iterations',
+          'https://sudoku-api-production-ff31.up.railway.app/api/game?iterations=$iterations',
         ),
         headers: {
           'accept': 'application/json',
-          'port': const String.fromEnvironment('PORT'),
+          'port': '8080',
         },
       );
 
@@ -118,7 +118,7 @@ class _SudokuAppState extends State<SudokuApp> {
         isDarkMode ? _darkTheme.colorScheme : _claudeTheme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
@@ -131,7 +131,7 @@ class _SudokuAppState extends State<SudokuApp> {
                 boxShadow: [
                   if (!isDarkMode)
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.1),
+                      color: Colors.black.withValues(alpha: 0.1),
                       blurRadius: 20,
                       spreadRadius: 2,
                     ),
@@ -195,7 +195,7 @@ class _SudokuAppState extends State<SudokuApp> {
         isDarkMode ? _darkTheme.colorScheme : _claudeTheme.colorScheme;
 
     return Scaffold(
-      backgroundColor: colorScheme.background,
+      backgroundColor: colorScheme.surface,
       body: Center(
         child: Container(
           margin: const EdgeInsets.all(24),
@@ -206,7 +206,7 @@ class _SudokuAppState extends State<SudokuApp> {
             boxShadow: [
               if (!isDarkMode)
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.1),
+                  color: Colors.black.withValues(alpha: 0.1),
                   blurRadius: 20,
                   spreadRadius: 2,
                 ),
@@ -215,7 +215,7 @@ class _SudokuAppState extends State<SudokuApp> {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(
+              const Icon(
                 Icons.error_outline,
                 size: 60,
                 color: Colors.red,
@@ -235,7 +235,7 @@ class _SudokuAppState extends State<SudokuApp> {
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   fontSize: 14,
-                  color: Colors.red.withOpacity(0.8),
+                  color: Colors.red.withValues(alpha: 0.8),
                 ),
               ),
               const SizedBox(height: 24),
@@ -283,7 +283,6 @@ class _SudokuAppState extends State<SudokuApp> {
     colorScheme: const ColorScheme.dark(
       primary: Color(0xFF6952DC),
       secondary: Color(0xFF4361EE),
-      background: Color(0xFF121829),
       surface: Color(0xFF1E293B),
     ),
     fontFamily: 'Poppins',
@@ -298,7 +297,6 @@ class _SudokuAppState extends State<SudokuApp> {
     colorScheme: const ColorScheme.light(
       primary: Color(0xFF5346A5),
       secondary: Color(0xFF3B5BD9),
-      background: Color(0xFFF5F7FA),
       surface: Color(0xFFE9EDF5),
     ),
     fontFamily: 'Poppins',

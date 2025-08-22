@@ -199,7 +199,7 @@ class _IterationSelectorScreenState extends State<IterationSelectorScreen>
                           boxShadow: [
                             if (!widget.isDarkMode)
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha:0.1),
                                 blurRadius: 8,
                                 spreadRadius: 0,
                               ),
@@ -233,7 +233,7 @@ class _IterationSelectorScreenState extends State<IterationSelectorScreen>
                       'Selecciona las iteraciones',
                       style: TextStyle(
                         fontSize: 18,
-                        color: textColor.withOpacity(0.7),
+                        color: textColor.withValues(alpha:0.7),
                         fontWeight: FontWeight.w300,
                       ),
                     ),
@@ -258,7 +258,7 @@ class _IterationSelectorScreenState extends State<IterationSelectorScreen>
                           boxShadow: [
                             if (!widget.isDarkMode)
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.1),
+                                color: Colors.black.withValues(alpha:0.1),
                                 blurRadius: 12,
                                 spreadRadius: 0,
                               ),
@@ -281,7 +281,7 @@ class _IterationSelectorScreenState extends State<IterationSelectorScreen>
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: _getDifficultyColor().withOpacity(0.2),
+                                color: _getDifficultyColor().withValues(alpha:0.2),
                                 borderRadius: BorderRadius.circular(15),
                                 border: Border.all(
                                   color: _getDifficultyColor(),
@@ -323,7 +323,7 @@ class _IterationSelectorScreenState extends State<IterationSelectorScreen>
                                   borderRadius: BorderRadius.circular(200),
                                   boxShadow: [
                                     BoxShadow(
-                                      color: colorScheme.primary.withOpacity(0.3),
+                                      color: colorScheme.primary.withValues(alpha:0.3),
                                       blurRadius: _isSpinning ? 30 : 15,
                                       spreadRadius: _isSpinning ? 5 : 2,
                                     ),
@@ -471,9 +471,9 @@ class IterationPolygonPainter extends CustomPainter {
 
     // Dibujar segmentos individuales
     for (int i = 0; i < sides; i++) {
-      final segmentAngle = 2 * math.pi / sides;
+      const segmentAngle = 2 * math.pi / sides;
       final startAngle = (segmentAngle * i) + rotation;
-      final sweepAngle = segmentAngle * 0.9;
+       const sweepAngle = segmentAngle * 0.9;
 
       int segmentIteration = 10 + i;
       
@@ -484,8 +484,8 @@ class IterationPolygonPainter extends CustomPainter {
       } else {
         double factor = i / sides;
         segmentColor = Color.lerp(
-          primaryColor.withOpacity(0.2),
-          primaryColor.withOpacity(0.6),
+          primaryColor.withValues(alpha:0.2),
+          primaryColor.withValues(alpha:0.6),
           factor,
         )!;
       }
@@ -537,7 +537,7 @@ class IterationPolygonPainter extends CustomPainter {
 
       // Sombra del indicador
       final shadowPaint = Paint()
-        ..color = Colors.black.withOpacity(0.3)
+        ..color = Colors.black.withValues(alpha:0.3)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3);
       
       canvas.drawPath(indicatorPath, shadowPaint);
@@ -546,7 +546,7 @@ class IterationPolygonPainter extends CustomPainter {
     // Efecto de brillo cuando gira
     if (isSpinning) {
       final glowPaint = Paint()
-        ..color = primaryColor.withOpacity(0.3)
+        ..color = primaryColor.withValues(alpha:0.3)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 15);
       
       canvas.drawCircle(center, radius + 8, glowPaint);
@@ -554,7 +554,7 @@ class IterationPolygonPainter extends CustomPainter {
 
     // Líneas radiales decorativas
     final linePaint = Paint()
-      ..color = primaryColor.withOpacity(0.4)
+      ..color = primaryColor.withValues(alpha:0.4)
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1;
 

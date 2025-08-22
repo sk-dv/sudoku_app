@@ -25,7 +25,6 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
   @override
   void initState() {
     super.initState();
-    print(widget.game.toString());
     _gameModel = SudokuGameModel.fromSudokuGame(sudokuGame: widget.game);
   }
 
@@ -92,7 +91,7 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
                 borderRadius: BorderRadius.circular(16),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
+                    color: Colors.black.withValues(alpha:0.3),
                     blurRadius: 20,
                     spreadRadius: 2,
                     offset: const Offset(
@@ -117,7 +116,7 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
                     if (_gameModel.isSelected[row][col]) {
                       cellColor = highlightColor;
                     } else if (_gameModel.isHighlighted[row][col]) {
-                      cellColor = colorScheme.primary.withOpacity(0.3);
+                      cellColor = colorScheme.primary.withValues(alpha:0.3);
                     }
 
                     // Determinar diseño de borde para crear líneas de subcuadrículas
@@ -216,7 +215,7 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
           boxShadow: [
             if (!widget.isDarkMode)
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha:0.05),
                 blurRadius: 4,
                 spreadRadius: 0,
                 offset: const Offset(0, 1),
@@ -250,7 +249,7 @@ class _SudokuGameScreenState extends State<SudokuGameScreen> {
           boxShadow: [
             if (!widget.isDarkMode)
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha:0.05),
                 blurRadius: 4,
                 spreadRadius: 0,
                 offset: const Offset(0, 1),
