@@ -1,263 +1,74 @@
 import 'package:flutter/material.dart';
-import 'package:sudoku_app/header.dart';
-import 'package:sudoku_app/sudoku_game.dart';
-import 'package:sudoku_app/sudoku_game_model.dart';
 
-class SudokuGameScreen extends StatefulWidget {
-  final Function toggleTheme;
-  final bool isDarkMode;
-  final SudokuGame game;
+import 'package:flutter_bloc/flutter_bloc.dart';
 
-  const SudokuGameScreen({
-    super.key,
-    required this.toggleTheme,
-    required this.isDarkMode,
-    required this.game,
-  });
+import 'package:sudoku_app/data/service_locator.dart';
+import 'package:sudoku_app/data/style.dart';
+import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/widgets/keyboard_mode.dart';
+import 'package:sudoku_app/widgets/pixeled_background.dart';
+import 'package:sudoku_app/widgets/shadow_icon.dart';
+import 'package:sudoku_app/widgets/sudoku_board.dart';
+import 'package:sudoku_app/widgets/token_selector.dart';
 
-  @override
-  State<SudokuGameScreen> createState() => _SudokuGameScreenState();
-}
-
-class _SudokuGameScreenState extends State<SudokuGameScreen> {
-  late SudokuGameModel _gameModel;
-
-  @override
-  void initState() {
-    super.initState();
-    _gameModel = SudokuGameModel.fromSudokuGame(sudokuGame: widget.game);
-  }
-
-  void _updateGameModel(SudokuGameModel newModel) {
-    setState(() {
-      _gameModel = newModel;
-    });
-  }
-
-  void _selectCell(int row, int col) {
-    _updateGameModel(_gameModel.selectCell(row, col));
-  }
-
-  void _enterNumber(int number) {
-    _updateGameModel(_gameModel.enterNumber(number));
-  }
-
-  void _clearCell() {
-    _updateGameModel(_gameModel.clearCell());
-  }
+class SudokuGameScreen extends StatelessWidget {
+  const SudokuGameScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(
-        child: Column(
-          children: [
-            Header(
-              toggleTheme: widget.toggleTheme,
-              isDarkMode: widget.isDarkMode,
-            ),
-            _buildSudokuBoard(),
-            _buildKeypad(),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSudokuBoard() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textColor = widget.isDarkMode ? Colors.white : Colors.black87;
-    final highlightColor =
-        widget.isDarkMode ? const Color(0xFF4361EE) : const Color(0xFF3B5BD9);
-    final borderColor =
-        widget.isDarkMode ? const Color(0xFF2A3A55) : const Color(0xFFD0D5DC);
-    final accentColor =
-        widget.isDarkMode ? const Color(0xFF6952DC) : const Color(0xFF5346A5);
-
-    return Expanded(
-      child: Center(
-        child: Transform(
-          alignment: Alignment.center,
-          transform: Matrix4.identity()
-            ..setEntry(3, 2, 0.001) // perspectiva
-            ..rotateX(-0.3) // rotación en X para efecto isométrico
-            ..rotateY(0.1), // ligera rotación en Y
-          child: AspectRatio(
-            aspectRatio: 1,
-            child: Container(
-              margin: const EdgeInsets.all(16.0),
-              decoration: BoxDecoration(
-                color: colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha:0.3),
-                    blurRadius: 20,
-                    spreadRadius: 2,
-                    offset: const Offset(
-                        8, 12), // sombra que refuerza la perspectiva
+    return BlocProvider(
+      create: (context) => SudokuGameCubit(),
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: BlocConsumer<SudokuGameCubit, SudokuGameState>(
+          listenWhen: (previous, current) => previous.step != current.step,
+          listener: (context, state) {
+            if (state.step == GameStep.stop) {
+              showModalBottomSheet(
+                context: context,
+                builder: (context) => const TokenSelector(),
+              ).whenComplete(context.read<SudokuGameCubit>().toggleGame);
+            }
+          },
+          builder: (context, state) {
+            return Scaffold(
+              appBar: AppBar(
+                backgroundColor: locator<SudokuStyle>().topBackground,
+                leadingWidth: MediaQuery.of(context).size.width * 0.15,
+                leading: Container(
+                  margin: const EdgeInsets.only(left: 15),
+                  child: ShadowIcon(
+                    icon: state.step.icon,
+                    onPressed: context.read<SudokuGameCubit>().toggleGame,
                   ),
+                ),
+                actions: [
+                  ShadowIcon(
+                    icon: locator<SudokuStyle>().themeIcon,
+                    onPressed: () {},
+                  )
                 ],
               ),
-              child: Padding(
-                padding: const EdgeInsets.all(2.0),
-                child: GridView.builder(
-                  physics: const NeverScrollableScrollPhysics(),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 9,
+              body: PixeledBackground(
+                stop: state.step == GameStep.stop,
+                primaryColor: locator<SudokuStyle>().topBackground,
+                secondaryColor: locator<SudokuStyle>().bottomBackground,
+                child: Center(
+                  child: Container(
+                    padding: const EdgeInsets.all(5),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const SudokuBoard(),
+                        const SizedBox(height: 20),
+                        ImageKeyboard(type: state.type),
+                      ],
+                    ),
                   ),
-                  itemCount: 81,
-                  itemBuilder: (context, index) {
-                    final row = index ~/ 9;
-                    final col = index % 9;
-
-                    // Determinar color de fondo según selección y resaltado
-                    Color cellColor = colorScheme.surface;
-                    if (_gameModel.isSelected[row][col]) {
-                      cellColor = highlightColor;
-                    } else if (_gameModel.isHighlighted[row][col]) {
-                      cellColor = colorScheme.primary.withValues(alpha:0.3);
-                    }
-
-                    // Determinar diseño de borde para crear líneas de subcuadrículas
-                    BorderSide rightBorder =
-                        BorderSide(color: borderColor, width: 1);
-                    BorderSide bottomBorder =
-                        BorderSide(color: borderColor, width: 1);
-
-                    // Bordes más gruesos para las subcuadrículas
-                    if (col % 3 == 2 && col < 8) {
-                      rightBorder = BorderSide(color: highlightColor, width: 2);
-                    }
-                    if (row % 3 == 2 && row < 8) {
-                      bottomBorder =
-                          BorderSide(color: highlightColor, width: 2);
-                    }
-
-                    return GestureDetector(
-                      onTap: () => _selectCell(row, col),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: cellColor,
-                          border: Border(
-                            right: rightBorder,
-                            bottom: bottomBorder,
-                          ),
-                        ),
-                        child: Center(
-                          child: _gameModel.board[row][col] != 0
-                              ? Text(
-                                  '${_gameModel.board[row][col]}',
-                                  style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: _gameModel.isErrorCell[row][col]
-                                        ? Colors.red
-                                        : _gameModel.isOriginal[row][col]
-                                            ? textColor
-                                            : accentColor,
-                                  ),
-                                )
-                              : null,
-                        ),
-                      ),
-                    );
-                  },
                 ),
               ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildKeypad() {
-    final colorScheme = Theme.of(context).colorScheme;
-    final textColor = widget.isDarkMode ? Colors.white : Colors.black87;
-
-    return Container(
-      padding: const EdgeInsets.all(16),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 1; i <= 5; i++)
-                _buildNumberButton(i, colorScheme, textColor),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              for (int i = 6; i <= 9; i++)
-                _buildNumberButton(i, colorScheme, textColor),
-              _buildEraseButton(colorScheme, textColor),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildNumberButton(
-      int number, ColorScheme colorScheme, Color textColor) {
-    return GestureDetector(
-      onTap: () => _enterNumber(number),
-      child: Container(
-        width: 50,
-        height: 50,
-        margin: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            if (!widget.isDarkMode)
-              BoxShadow(
-                color: Colors.black.withValues(alpha:0.05),
-                blurRadius: 4,
-                spreadRadius: 0,
-                offset: const Offset(0, 1),
-              ),
-          ],
-        ),
-        child: Center(
-          child: Text(
-            '$number',
-            style: TextStyle(
-              color: textColor,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildEraseButton(ColorScheme colorScheme, Color textColor) {
-    return GestureDetector(
-      onTap: () => _clearCell(),
-      child: Container(
-        width: 50,
-        height: 50,
-        margin: const EdgeInsets.all(4),
-        decoration: BoxDecoration(
-          color: colorScheme.surface,
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            if (!widget.isDarkMode)
-              BoxShadow(
-                color: Colors.black.withValues(alpha:0.05),
-                blurRadius: 4,
-                spreadRadius: 0,
-                offset: const Offset(0, 1),
-              ),
-          ],
-        ),
-        child: Center(
-          child: Icon(Icons.backspace, color: textColor),
+            );
+          },
         ),
       ),
     );

@@ -2,7 +2,6 @@ import 'sudoku_game.dart';
 
 enum DifficultLevel { veryEasy, easy, medium, hard, veryHard, master }
 
-// Modelo inmutable para el juego de Sudoku
 class SudokuGameModel {
   final List<List<int>> board;
   final List<List<bool>> isOriginal;
@@ -28,14 +27,14 @@ class SudokuGameModel {
     required this.secondsElapsed,
   });
 
-  // Constructor factory para crear un nuevo juego desde un SudokuGame
   factory SudokuGameModel.fromSudokuGame({
     required SudokuGame sudokuGame,
     DifficultLevel difficulty = DifficultLevel.medium,
   }) {
-    // Crear matriz de celdas originales (celdas con números != 0)
     List<List<bool>> newIsOriginal = List.generate(
-        9, (i) => List.generate(9, (j) => sudokuGame.playableGrid[i][j] != 0));
+      9,
+      (i) => List.generate(9, (j) => sudokuGame.playableGrid[i][j] != 0),
+    );
 
     final model = SudokuGameModel(
       board: List.generate(9, (i) => List.from(sudokuGame.playableGrid[i])),
@@ -53,12 +52,11 @@ class SudokuGameModel {
     return model.checkErrors();
   }
 
-  // Selecciona una celda y actualiza las celdas resaltadas
   SudokuGameModel selectCell(int row, int col) {
-    List<List<bool>> newIsSelected =
+    final newIsSelected =
         List.generate(9, (i) => List.generate(9, (j) => false));
 
-    List<List<bool>> newIsHighlighted =
+    final newIsHighlighted =
         List.generate(9, (i) => List.generate(9, (j) => false));
 
     int newSelectedRow = -1;
@@ -69,7 +67,6 @@ class SudokuGameModel {
       newSelectedRow = row;
       newSelectedCol = col;
 
-      // Resaltar fila y columna
       for (int i = 0; i < 9; i++) {
         newIsHighlighted[row][i] = true;
         newIsHighlighted[i][col] = true;
@@ -99,7 +96,6 @@ class SudokuGameModel {
     );
   }
 
-  // Ingresa un número en la celda seleccionada
   SudokuGameModel enterNumber(int number) {
     if (selectedRow >= 0 &&
         selectedCol >= 0 &&
@@ -127,7 +123,6 @@ class SudokuGameModel {
     return this;
   }
 
-  // Borra el número de la celda seleccionada
   SudokuGameModel clearCell() {
     if (selectedRow >= 0 &&
         selectedCol >= 0 &&
@@ -155,7 +150,6 @@ class SudokuGameModel {
     return this;
   }
 
-  // Verifica errores en el tablero (números duplicados)
   SudokuGameModel checkErrors() {
     List<List<bool>> newIsErrorCell =
         List.generate(9, (i) => List.generate(9, (j) => false));
@@ -180,7 +174,6 @@ class SudokuGameModel {
       }
     }
 
-    // Verificar columnas
     for (int col = 0; col < 9; col++) {
       Map<int, List<int>> numPositions = {};
       for (int row = 0; row < 9; row++) {
@@ -200,7 +193,6 @@ class SudokuGameModel {
       }
     }
 
-    // Verificar subcuadrículas 3x3
     for (int blockRow = 0; blockRow < 3; blockRow++) {
       for (int blockCol = 0; blockCol < 3; blockCol++) {
         Map<int, List<List<int>>> numPositions = {};
