@@ -2,8 +2,10 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-import 'package:sudoku_app/data/service_locator.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:sudoku_app/data/style.dart';
+import 'package:sudoku_app/sudoku_game_cubit.dart';
 
 class PixelatedStarsBackground extends StatefulWidget {
   final Color primaryColor;
@@ -78,14 +80,19 @@ class _PixelatedStarsBackgroundState extends State<PixelatedStarsBackground>
               stops: const [0.0, 0.7, 1.0],
             ),
           ),
-          child: Stack(
-            children: [
-              if (locator<SudokuStyle>().mode.isDark)
-                CustomPaint(
-                  painter: StarsPainter(_stars, _starsController.value),
-                  size: Size.infinite,
-                ),
-            ],
+          child: BlocSelector<SudokuGameCubit, SudokuGameState, SudokuStyle>(
+            selector: (state) => state.style,
+            builder: (context, style) {
+              return Stack(
+                children: [
+                  if (style.mode.isDark)
+                    CustomPaint(
+                      painter: StarsPainter(_stars, _starsController.value),
+                      size: Size.infinite,
+                    ),
+                ],
+              );
+            },
           ),
         );
       },

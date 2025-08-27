@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter_bloc/flutter_bloc.dart';
+
 import 'package:sudoku_app/data/context_utils.dart';
-import 'package:sudoku_app/data/service_locator.dart';
 import 'package:sudoku_app/data/style.dart';
 import 'package:sudoku_app/data/token_type.dart';
+import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'shadow_button.dart';
 
 class KeyboardMode extends StatelessWidget {
@@ -42,33 +44,39 @@ class KeyboardMode extends StatelessWidget {
             shadowOffset: const Offset(2.5, 2.5),
             pressedSpace: 0,
             restSpace: 2,
-            child: Container(
-              decoration: BoxDecoration(
-                color: locator<SudokuStyle>().background,
-                border: Border.all(color: locator<SudokuStyle>().borderColor),
-                borderRadius: BorderRadius.circular(4),
-              ),
-              child: Center(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    AnimatedDefaultTextStyle(
-                      duration: const Duration(milliseconds: 200),
-                      style: TextStyle(
-                        fontSize: type.isImage ? 10 : 16,
-                        fontWeight: FontWeight.w900,
-                        color: locator<SudokuStyle>().flatColor,
-                        fontFamily: 'Overbit Regular',
-                      ),
-                      child: Text('$buttonIndex', textAlign: TextAlign.center),
+            child: BlocSelector<SudokuGameCubit, SudokuGameState, SudokuStyle>(
+              selector: (state) => state.style,
+              builder: (context, style) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: style.background,
+                    border: Border.all(color: style.borderColor),
+                    borderRadius: BorderRadius.circular(4),
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            fontSize: type.isImage ? 10 : 16,
+                            fontWeight: FontWeight.w900,
+                            color: style.flatColor,
+                            fontFamily: 'Brick Sans',
+                          ),
+                          child:
+                              Text('$buttonIndex', textAlign: TextAlign.center),
+                        ),
+                        if (type.isImage)
+                          Expanded(
+                            child: Image.asset('${type.path}0$buttonIndex.png'),
+                          )
+                      ],
                     ),
-                    if (type.isImage)
-                      Expanded(
-                        child: Image.asset('${type.path}0$buttonIndex.png'),
-                      )
-                  ],
-                ),
-              ),
+                  ),
+                );
+              },
             ),
           );
         },

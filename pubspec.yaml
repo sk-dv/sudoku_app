@@ -38,6 +38,9 @@ flutter:
     - family: Overbit Regular
       fonts:
         - asset: assets/Overbit-Regular.otf
+    - family: Brick Sans
+      fonts:
+        - asset: assets/NTBrickSans.otf
 
 import_sorter:
   emojis: true

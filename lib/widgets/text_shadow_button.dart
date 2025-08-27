@@ -31,7 +31,7 @@ class TextShadowButton extends StatelessWidget {
             style: const TextStyle(
               color: Colors.white,
               fontSize: 30,
-              fontFamily: 'Overbit Regular',
+              fontFamily: 'Brick Sans',
               letterSpacing: 5,
             ),
           ),
