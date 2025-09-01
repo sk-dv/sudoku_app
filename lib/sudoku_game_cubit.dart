@@ -4,6 +4,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:sudoku_app/data/style.dart';
+import 'package:sudoku_app/sudoku.dart';
 import 'data/game_step.dart';
 import 'data/token_type.dart';
 
@@ -11,11 +12,13 @@ class SudokuGameState extends Equatable {
   final GameStep step;
   final TokenType type;
   final SudokuStyle style;
+  final GameScreen screen;
 
   const SudokuGameState({
     required this.step,
     required this.type,
     required this.style,
+    required this.screen,
   });
 
   factory SudokuGameState.empty() {
@@ -23,19 +26,21 @@ class SudokuGameState extends Equatable {
       step: GameStep.play,
       type: TokenType.number,
       style: SudokuLightStyle(),
+      screen: GameScreen.menu,
     );
   }
 
-  SudokuGameState copy({GameStep? step, TokenType? type, SudokuStyle? style}) {
+  SudokuGameState copy({GameStep? step, TokenType? type, SudokuStyle? style, GameScreen? screen}) {
     return SudokuGameState(
       step: step ?? this.step,
       type: type ?? this.type,
       style: style ?? this.style,
+      screen: screen ?? this.screen,
     );
   }
 
   @override
-  List<Object> get props => [step, type, style];
+  List<Object> get props => [step, type, style, screen];
 }
 
 class SudokuGameCubit extends Cubit<SudokuGameState> {
@@ -64,4 +69,8 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
           : SudokuLightStyle(),
     ));
   }
+
+  void play() => emit(state.copy(screen: GameScreen.game));
+
+  void back() => emit(state.copy(screen: GameScreen.menu));
 }

@@ -3,9 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:sudoku_app/widgets/shadow_button.dart';
 
 class TextShadowButton extends StatelessWidget {
-  const TextShadowButton({super.key, required this.text});
+  const TextShadowButton({super.key, required this.text, required this.onTap});
 
   final String text;
+  final void Function() onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +16,7 @@ class TextShadowButton extends StatelessWidget {
       pressedSpace: 0,
       shadowOffset: const Offset(0, 0),
       shadowColor: const Color(0xFF880E4F),
-      onPressed: () {},
+      onPressed: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: 20,
@@ -25,7 +26,7 @@ class TextShadowButton extends StatelessWidget {
           color: const Color(0xFFE91E63),
           borderRadius: BorderRadius.circular(12),
         ),
-        child:  Center(
+        child: Center(
           child: Text(
             text.toUpperCase(),
             style: const TextStyle(

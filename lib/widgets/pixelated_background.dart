@@ -1,16 +1,16 @@
 import 'package:flutter/material.dart';
 
-import 'package:sudoku_app/widgets/pixeled_clouds.dart';
-import 'package:sudoku_app/widgets/pixeled_stars_background.dart';
+import 'package:sudoku_app/widgets/pixelated_clouds.dart';
+import 'package:sudoku_app/widgets/pixelated_stars_background.dart';
 
-class PixeledBackground extends StatelessWidget {
+class PixelatedBackground extends StatelessWidget {
   final List<String>? cloudAssets;
   final Color primaryColor;
   final Color secondaryColor;
   final Widget child;
   final bool stop;
 
-  const PixeledBackground({
+  const PixelatedBackground({
     super.key,
     this.cloudAssets,
     required this.primaryColor,
@@ -27,7 +27,7 @@ class PixeledBackground extends StatelessWidget {
           primaryColor: primaryColor,
           secondaryColor: secondaryColor,
         ),
-        PixeledClouds(
+        PixelatedClouds(
           stop: stop,
           primaryColor: primaryColor,
           secondaryColor: secondaryColor,

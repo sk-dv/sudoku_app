@@ -2,13 +2,13 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 
-class PixeledClouds extends StatefulWidget {
+class PixelatedClouds extends StatefulWidget {
   final List<String>? cloudAssets;
   final Color primaryColor;
   final Color secondaryColor;
   final bool stop;
 
-  const PixeledClouds({
+  const PixelatedClouds({
     super.key,
     this.cloudAssets,
     required this.primaryColor,
@@ -17,10 +17,10 @@ class PixeledClouds extends StatefulWidget {
   });
 
   @override
-  State<PixeledClouds> createState() => _PixeledCloudsState();
+  State<PixelatedClouds> createState() => _PixelatedCloudsState();
 }
 
-class _PixeledCloudsState extends State<PixeledClouds>
+class _PixelatedCloudsState extends State<PixelatedClouds>
     with TickerProviderStateMixin {
   late AnimationController _cloudsController;
   late List<CloudSprite> _clouds;
@@ -40,7 +40,7 @@ class _PixeledCloudsState extends State<PixeledClouds>
   }
 
   @override
-  void didUpdateWidget(covariant PixeledClouds oldWidget) {
+  void didUpdateWidget(covariant PixelatedClouds oldWidget) {
     super.didUpdateWidget(oldWidget);
     
     if (oldWidget.stop != widget.stop) {

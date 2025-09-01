@@ -32,7 +32,10 @@ class MenuScreen extends StatelessWidget {
                 );
               },
             ),
-            const TextShadowButton(text: 'JUGAR')
+            TextShadowButton(
+              text: 'JUGAR',
+              onTap: context.read<SudokuGameCubit>().play,
+            )
           ],
         ),
       ),
