@@ -48,7 +48,7 @@ class TokenSelector extends StatelessWidget {
                 Container(
                   margin: const EdgeInsets.only(left: 35),
                   child: Text(
-                    'SIMBOLO_\n${state.type.name}',
+                    state.type.name,
                     style: TextStyle(
                       fontFamily: 'Brick Sans',
                       fontSize: 20,

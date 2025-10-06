@@ -1,57 +1,23 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sudoku_app/data/context_utils.dart';
 
 import 'package:sudoku_app/menu_screen.dart';
-import 'package:sudoku_app/mode_wrapper_background.dart';
+import 'package:sudoku_app/game_background.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
-import 'package:sudoku_app/sudoku_game_screen.dart';
+import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
+import 'package:sudoku_app/services/sudoku_api_service.dart';
 
 import 'data/game_step.dart';
-import 'widgets/pause_modal.dart';
+import 'widgets/pixelated_background.dart';
 import 'widgets/shadow_icon.dart';
 
 enum GameScreen {
   menu,
   game;
 
-  WrapperParams get params {
-    switch (this) {
-      case GameScreen.menu:
-        return WrapperParams(builder: (context, state) => const MenuScreen());
-      case GameScreen.game:
-        return WrapperParams(
-          leading: (context, state) => ShadowIcon(
-            icon: state.step.icon,
-            onPressed: context.read<SudokuGameCubit>().toggleGame,
-          ),
-          listenWhen: (prev, next) => prev.step != next.step,
-          listener: (context, state) {
-            if (state.step == GameStep.stop) {
-              showModalBottomSheet(
-                context: context,
-                builder: (context) => const TokenSelector(),
-              ).whenComplete(context.read<SudokuGameCubit>().toggleGame);
-            }
-          },
-          builder: (context, state) => SudokuGameScreen(type: state.type),
-        );
-    }
-  }
-}
-
-class WrapperParams {
-  const WrapperParams({
-    this.leading,
-    required this.builder,
-    this.listenWhen,
-    this.listener,
-  });
-
-  final Widget Function(BuildContext, SudokuGameState)? leading;
-  final Widget Function(BuildContext, SudokuGameState) builder;
-  final bool Function(SudokuGameState, SudokuGameState)? listenWhen;
-  final void Function(BuildContext, SudokuGameState)? listener;
+  bool get isMenu => this == GameScreen.menu;
 }
 
 class Sudoku extends StatelessWidget {
@@ -59,16 +25,69 @@ class Sudoku extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => SudokuGameCubit()..setupStyle(context),
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (_) => SudokuGameCubit()..setupStyle(context),
+        ),
+        BlocProvider(
+          create: (_) => SudokuBoardCubit(SudokuApiService()),
+        ),
+      ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: BlocBuilder<SudokuGameCubit, SudokuGameState>(
-          builder: (context, state) {
-            return ModeWrapperBackground(params: state.screen.params);
+        home: CloudsBackground(
+          builder: (context, onMenu) {
+            return onMenu ? const MenuScreen() : const GameBackground();
           },
         ),
       ),
+    );
+  }
+}
+
+class CloudsBackground extends StatelessWidget {
+  const CloudsBackground({super.key, required this.builder});
+
+  final Widget Function(BuildContext, bool) builder;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<SudokuGameCubit, SudokuGameState>(
+      builder: (context, state) {
+        return Scaffold(
+          backgroundColor: Colors.transparent,
+          appBar: AppBar(
+            backgroundColor: state.style.topBackground,
+            surfaceTintColor: Colors.transparent,
+            elevation: 0,
+            scrolledUnderElevation: 0,
+            shadowColor: Colors.transparent,
+            leadingWidth: state.screen.isMenu ? null : context.width * 0.2,
+            leading: state.screen.isMenu
+                ? null
+                : Container(
+                    margin: const EdgeInsets.only(left: 15),
+                    child: ShadowIcon(
+                      icon: state.step.icon,
+                      onPressed: context.read<SudokuGameCubit>().toggleGame,
+                    ),
+                  ),
+            actions: [
+              ShadowIcon(
+                icon: state.style.themeIcon,
+                onPressed: context.read<SudokuGameCubit>().changeMode,
+              )
+            ],
+          ),
+          body: PixelatedBackground(
+            stop: state.step == GameStep.stop,
+            primaryColor: state.style.topBackground,
+            secondaryColor: state.style.bottomBackground,
+            child: builder(context, state.screen.isMenu),
+          ),
+        );
+      },
     );
   }
 }

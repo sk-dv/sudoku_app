@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/data/context_utils.dart';
 import 'package:sudoku_app/data/style.dart';
 import 'package:sudoku_app/data/token_type.dart';
@@ -36,7 +37,9 @@ class KeyboardMode extends StatelessWidget {
           if (buttonIndex > 9) return const SizedBox.shrink();
 
           return ShadowButton(
-            onPressed: () {},
+            onPressed: () {
+              context.read<SudokuBoardCubit>().enterNumber(buttonIndex);
+            },
             containerSize: ((width / 5), height),
             shadowSize: ((width / 5), height),
             shadowColor: const Color(0xFF880E4F),

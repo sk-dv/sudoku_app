@@ -18,10 +18,7 @@ class TextShadowButton extends StatelessWidget {
       shadowColor: const Color(0xFF880E4F),
       onPressed: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(
-          horizontal: 20,
-          vertical: 10,
-        ),
+      
         decoration: BoxDecoration(
           color: const Color(0xFFE91E63),
           borderRadius: BorderRadius.circular(12),
@@ -31,7 +28,7 @@ class TextShadowButton extends StatelessWidget {
             text.toUpperCase(),
             style: const TextStyle(
               color: Colors.white,
-              fontSize: 30,
+              fontSize: 20,
               fontFamily: 'Brick Sans',
               letterSpacing: 5,
             ),

@@ -35,15 +35,18 @@ class SudokuGame {
     );
   }
 
-  factory SudokuGame.fromJson(Map<String, dynamic> json) {
+  factory SudokuGame.fromJson(Map<String, dynamic> data) {
+    final json = data['data'] as Map<String, dynamic>;
     if (json.isEmpty) return SudokuGame.empty();
 
     return SudokuGame(
       playableGrid: List<List<int>>.from(
-          json['playable']['grid'].map((row) => List<int>.from(row))),
+        json['playable']['grid'].map((row) => List<int>.from(row)),
+      ),
       playableIsValid: json['playable']['is_valid'],
       solutionGrid: List<List<int>>.from(
-          json['solution']['grid'].map((row) => List<int>.from(row))),
+        json['solution']['grid'].map((row) => List<int>.from(row)),
+      ),
       solutionIsValid: json['solution']['is_valid'],
       difficultyLevel: json['difficulty']['level'],
       difficultyCoefficient: json['difficulty']['coefficient'].toDouble(),
