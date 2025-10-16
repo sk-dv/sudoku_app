@@ -12,8 +12,14 @@ import 'shadow_button.dart';
 class KeyboardMode extends StatelessWidget {
   final int idx;
   final TokenType type;
+  final bool showClearButton;
 
-  const KeyboardMode({super.key, required this.idx, required this.type});
+  const KeyboardMode({
+    super.key,
+    required this.idx,
+    required this.type,
+    this.showClearButton = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +40,12 @@ class KeyboardMode extends StatelessWidget {
         itemCount: 5,
         itemBuilder: (context, index) {
           final buttonIndex = idx + index;
+
+          // Si es el último slot de la segunda fila y showClearButton es true
+          if (showClearButton && buttonIndex == 10) {
+            return _ClearButtonCompact();
+          }
+
           if (buttonIndex > 9) return const SizedBox.shrink();
 
           return ShadowButton(
@@ -73,7 +85,12 @@ class KeyboardMode extends StatelessWidget {
                         ),
                         if (type.isImage)
                           Expanded(
-                            child: Image.asset('${type.path}0$buttonIndex.png'),
+                            child: Padding(
+                              padding: type == TokenType.halloween || type == TokenType.cats
+                                  ? const EdgeInsets.all(6.0)
+                                  : EdgeInsets.zero,
+                              child: Image.asset('${type.path}0$buttonIndex.png'),
+                            ),
                           )
                       ],
                     ),
@@ -97,7 +114,50 @@ class ImageKeyboard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
-      children: [1, 6].map((i) => KeyboardMode(idx: i, type: type)).toList(),
+      children: [
+        KeyboardMode(idx: 1, type: type),
+        KeyboardMode(idx: 6, type: type, showClearButton: true),
+      ],
+    );
+  }
+}
+
+class _ClearButtonCompact extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final width = context.width * 0.85;
+    final height = context.height * 0.075;
+
+    return ShadowButton(
+      onPressed: () {
+        context.read<SudokuBoardCubit>().clearCell();
+      },
+      containerSize: ((width / 5), height),
+      shadowSize: ((width / 5), height),
+      shadowColor: const Color(0xFF880E4F),
+      radius: 12,
+      shadowOffset: const Offset(2.5, 2.5),
+      pressedSpace: 0,
+      restSpace: 2,
+      child: BlocSelector<SudokuGameCubit, SudokuGameState, SudokuStyle>(
+        selector: (state) => state.style,
+        builder: (context, style) {
+          return Container(
+            decoration: BoxDecoration(
+              color: style.background,
+              border: Border.all(color: style.borderColor),
+              borderRadius: BorderRadius.circular(4),
+            ),
+            child: Center(
+              child: Icon(
+                Icons.backspace_outlined,
+                color: style.flatColor,
+                size: 24,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }

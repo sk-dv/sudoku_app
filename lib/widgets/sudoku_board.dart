@@ -35,6 +35,7 @@ class SudokuBoard extends StatelessWidget {
 
         return SudokuGrid(
           boardObject: board,
+          isCompleted: gameModel.isCompleted,
           onCellTap: (row, col) {
             context.read<SudokuBoardCubit>().selectCell(row, col);
           },

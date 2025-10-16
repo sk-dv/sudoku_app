@@ -35,9 +35,9 @@ class Cell extends StatelessWidget {
           textColor = style.background;
           borderColor = style.borderColor;
         } else if (sudokuObject.isError) {
-          cellColor = style.pixelRed;
-          textColor = style.background;
-          borderColor = style.borderColor;
+          cellColor = style.errorCell;
+          textColor = style.errorText;
+          borderColor = style.errorCell.withValues(alpha: 0.8);
         } else if (sudokuObject.isHighlighted) {
           cellColor = style.cellColor.withValues(alpha: 0.3);
           textColor = style.flatColor;
@@ -99,10 +99,16 @@ class ImageCell extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isHalloween = path.contains('halloween');
+    final isCats = path.contains('cats');
+
     return Center(
       child: value == 0
           ? const SizedBox.shrink()
-          : Image.asset('${path}0$value.png', fit: BoxFit.contain),
+          : Padding(
+              padding: isHalloween || isCats ? const EdgeInsets.all(8.0) : EdgeInsets.zero,
+              child: Image.asset('${path}0$value.png', fit: BoxFit.contain),
+            ),
     );
   }
 }

@@ -11,11 +11,13 @@ import 'package:sudoku_app/widgets/grid.dart';
 class SudokuGrid extends StatelessWidget {
   final List<List<SudokuObject>> boardObject;
   final Function(int, int) onCellTap;
+  final bool isCompleted;
 
   const SudokuGrid({
     super.key,
     required this.boardObject,
     required this.onCellTap,
+    this.isCompleted = false,
   });
 
   @override
@@ -28,11 +30,25 @@ class SudokuGrid extends StatelessWidget {
           child: BlocSelector<SudokuGameCubit, SudokuGameState, SudokuStyle>(
             selector: (state) => state.style,
             builder: (context, style) {
-              return Container(
+              final borderColor = isCompleted
+                  ? style.successCell
+                  : style.background;
+
+              return AnimatedContainer(
+                duration: const Duration(milliseconds: 500),
                 decoration: BoxDecoration(
                   color: style.background.withValues(alpha: 1),
                   borderRadius: BorderRadius.circular(4),
-                  border: Border.all(color: style.background, width: 3),
+                  border: Border.all(color: borderColor, width: 3),
+                  boxShadow: isCompleted
+                      ? [
+                          BoxShadow(
+                            color: style.successCell.withValues(alpha: 0.3),
+                            blurRadius: 20,
+                            spreadRadius: 2,
+                          ),
+                        ]
+                      : null,
                 ),
                 child: Grid(
                   builder: (row, col) {

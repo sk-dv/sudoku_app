@@ -6,10 +6,20 @@ import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/text_shadow.dart';
 
-class DailyPuzzleScreen extends StatelessWidget {
+class DailyPuzzleScreen extends StatefulWidget {
   const DailyPuzzleScreen({super.key});
 
+  @override
+  State<DailyPuzzleScreen> createState() => _DailyPuzzleScreenState();
+}
+
+class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
+  String? _selectedDifficulty;
+
   void _playDailyPuzzle(BuildContext context, String difficulty) {
+    setState(() {
+      _selectedDifficulty = difficulty;
+    });
     context.read<SudokuBoardCubit>().loadDailyGame(difficulty: difficulty);
     context.read<SudokuGameCubit>().play();
   }
@@ -92,6 +102,8 @@ class DailyPuzzleScreen extends StatelessWidget {
                     difficulty: 'EASY',
                     color: const Color(0xFF4CAF50),
                     onTap: () => _playDailyPuzzle(context, 'EASY'),
+                    isSelected: _selectedDifficulty == 'EASY',
+                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'EASY',
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
@@ -99,6 +111,8 @@ class DailyPuzzleScreen extends StatelessWidget {
                     difficulty: 'MEDIUM',
                     color: const Color(0xFF2196F3),
                     onTap: () => _playDailyPuzzle(context, 'MEDIUM'),
+                    isSelected: _selectedDifficulty == 'MEDIUM',
+                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'MEDIUM',
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
@@ -106,6 +120,8 @@ class DailyPuzzleScreen extends StatelessWidget {
                     difficulty: 'HARD',
                     color: const Color(0xFFFFC107),
                     onTap: () => _playDailyPuzzle(context, 'HARD'),
+                    isSelected: _selectedDifficulty == 'HARD',
+                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'HARD',
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
@@ -113,6 +129,8 @@ class DailyPuzzleScreen extends StatelessWidget {
                     difficulty: 'EXPERT',
                     color: const Color(0xFFFF9800),
                     onTap: () => _playDailyPuzzle(context, 'EXPERT'),
+                    isSelected: _selectedDifficulty == 'EXPERT',
+                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'EXPERT',
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
@@ -120,6 +138,8 @@ class DailyPuzzleScreen extends StatelessWidget {
                     difficulty: 'MASTER',
                     color: const Color(0xFFF44336),
                     onTap: () => _playDailyPuzzle(context, 'MASTER'),
+                    isSelected: _selectedDifficulty == 'MASTER',
+                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'MASTER',
                   ),
                   SizedBox(height: context.height * 0.11),
                 ],
@@ -157,55 +177,71 @@ class _DailyDifficultyCard extends StatelessWidget {
     required this.difficulty,
     required this.color,
     required this.onTap,
+    this.isSelected = false,
+    this.isDisabled = false,
   });
 
   final String level;
   final String difficulty;
   final Color color;
   final VoidCallback onTap;
+  final bool isSelected;
+  final bool isDisabled;
 
   @override
   Widget build(BuildContext context) {
+    final effectiveColor = isDisabled ? color.withValues(alpha: 0.3) : color;
+    final backgroundColor = isSelected
+        ? color.withValues(alpha: 0.3)
+        : color.withValues(alpha: 0.2);
+
     return GestureDetector(
-      onTap: onTap,
-      child: FloatingCard(
-        elevation: 6,
-        padding: const EdgeInsets.all(15),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(5),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color, width: 2),
-              ),
-              child: Icon(
-                Icons.play_arrow_rounded,
-                color: color,
-                size: 20,
-              ),
-            ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Text(
-                level,
-                style: TextStyle(
-                  color: color,
-                  fontSize: 15,
-                  fontFamily: 'Brick Sans',
-                  letterSpacing: 2,
-                  fontWeight: FontWeight.bold,
+      onTap: isDisabled ? null : onTap,
+      child: Opacity(
+        opacity: isDisabled ? 0.4 : 1.0,
+        child: FloatingCard(
+          elevation: isDisabled ? 2 : 6,
+          padding: const EdgeInsets.all(15),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Container(
+                padding: const EdgeInsets.all(5),
+                decoration: BoxDecoration(
+                  color: backgroundColor,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: effectiveColor,
+                    width: isSelected ? 3 : 2,
+                  ),
+                ),
+                child: Icon(
+                  isSelected ? Icons.check_circle_rounded : Icons.play_arrow_rounded,
+                  color: effectiveColor,
+                  size: 20,
                 ),
               ),
-            ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: color,
-              size: 20,
-            ),
-          ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  level,
+                  style: TextStyle(
+                    color: effectiveColor,
+                    fontSize: 15,
+                    fontFamily: 'Brick Sans',
+                    letterSpacing: 2,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
+                  ),
+                ),
+              ),
+              if (!isDisabled)
+                Icon(
+                  Icons.arrow_forward_ios_rounded,
+                  color: effectiveColor,
+                  size: 20,
+                ),
+            ],
+          ),
         ),
       ),
     );

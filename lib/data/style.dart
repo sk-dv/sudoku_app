@@ -19,6 +19,9 @@ abstract class SudokuStyle {
   Color get bottomBackground;
   Color get themeColor;
   IconData get themeIcon;
+  Color get errorCell;
+  Color get errorText;
+  Color get successCell;
 }
 
 class SudokuDarkStyle implements SudokuStyle {
@@ -47,6 +50,15 @@ class SudokuDarkStyle implements SudokuStyle {
 
   @override
   IconData get themeIcon => Icons.dark_mode;
+
+  @override
+  Color get errorCell => const Color(0xFFFC8181);
+
+  @override
+  Color get errorText => const Color(0xFF1A1A2E);
+
+  @override
+  Color get successCell => const Color(0xFF68D391);
 }
 
 class SudokuLightStyle implements SudokuStyle {
@@ -75,4 +87,13 @@ class SudokuLightStyle implements SudokuStyle {
 
   @override
   IconData get themeIcon => Icons.light_mode;
+
+  @override
+  Color get errorCell => const Color(0xFFFEB2B2);
+
+  @override
+  Color get errorText => const Color(0xFF742A2A);
+
+  @override
+  Color get successCell => const Color(0xFF9AE6B4);
 }

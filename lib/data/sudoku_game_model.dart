@@ -13,6 +13,7 @@ class SudokuGameModel {
   final DifficultLevel difficulty;
   final String formattedTime;
   final int secondsElapsed;
+  final bool isCompleted;
 
   const SudokuGameModel({
     required this.board,
@@ -25,6 +26,7 @@ class SudokuGameModel {
     required this.difficulty,
     required this.formattedTime,
     required this.secondsElapsed,
+    this.isCompleted = false,
   });
 
   factory SudokuGameModel.fromSudokuGame({
@@ -93,6 +95,7 @@ class SudokuGameModel {
       difficulty: difficulty,
       formattedTime: formattedTime,
       secondsElapsed: secondsElapsed,
+      isCompleted: isCompleted,
     );
   }
 
@@ -115,6 +118,7 @@ class SudokuGameModel {
         difficulty: difficulty,
         formattedTime: formattedTime,
         secondsElapsed: secondsElapsed,
+        isCompleted: isCompleted,
       );
 
       return updatedModel.checkErrors();
@@ -142,6 +146,7 @@ class SudokuGameModel {
         difficulty: difficulty,
         formattedTime: formattedTime,
         secondsElapsed: secondsElapsed,
+        isCompleted: isCompleted,
       );
 
       return updatedModel.checkErrors();
@@ -153,6 +158,8 @@ class SudokuGameModel {
   SudokuGameModel checkErrors() {
     List<List<bool>> newIsErrorCell =
         List.generate(9, (i) => List.generate(9, (j) => false));
+
+    bool hasErrors = false;
 
     // Verificar filas
     for (int row = 0; row < 9; row++) {
@@ -167,6 +174,7 @@ class SudokuGameModel {
 
       for (var entry in numPositions.entries) {
         if (entry.value.length > 1) {
+          hasErrors = true;
           for (int col in entry.value) {
             newIsErrorCell[row][col] = true;
           }
@@ -186,6 +194,7 @@ class SudokuGameModel {
 
       for (var entry in numPositions.entries) {
         if (entry.value.length > 1) {
+          hasErrors = true;
           for (int row in entry.value) {
             newIsErrorCell[row][col] = true;
           }
@@ -212,6 +221,7 @@ class SudokuGameModel {
 
         for (var entry in numPositions.entries) {
           if (entry.value.length > 1) {
+            hasErrors = true;
             for (var pos in entry.value) {
               newIsErrorCell[pos[0]][pos[1]] = true;
             }
@@ -219,6 +229,9 @@ class SudokuGameModel {
         }
       }
     }
+
+    // Verificar si está completo (sin errores y sin celdas vacías)
+    bool isBoardComplete = !hasErrors && _isBoardFull();
 
     return SudokuGameModel(
       board: board,
@@ -231,6 +244,18 @@ class SudokuGameModel {
       difficulty: difficulty,
       formattedTime: formattedTime,
       secondsElapsed: secondsElapsed,
+      isCompleted: isBoardComplete,
     );
+  }
+
+  bool _isBoardFull() {
+    for (int i = 0; i < 9; i++) {
+      for (int j = 0; j < 9; j++) {
+        if (board[i][j] == 0) {
+          return false;
+        }
+      }
+    }
+    return true;
   }
 }
