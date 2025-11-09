@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/widgets/keyboard_mode.dart';
 import 'package:sudoku_app/widgets/sudoku_board.dart';
+import 'package:sudoku_app/widgets/game_controls.dart';
 
 import 'data/token_type.dart';
 
@@ -14,6 +15,13 @@ class SudokuGameScreen extends StatelessWidget {
   });
 
   final TokenType type;
+
+  void _handleHints(BuildContext context) {
+    // Placeholder para lógica de pistas
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Pista próximamente')),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,8 +41,21 @@ class SudokuGameScreen extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
+                // Controles encima del tablero
+                GameControls(
+                  onBack: () {},
+                  onHints: () => _handleHints(context),
+                  hintsCount: 3,
+                ),
+
+                const SizedBox(height: 16),
+
+                // Tablero
                 const SudokuBoard(),
+
                 const SizedBox(height: 20),
+
+                // Teclado
                 ImageKeyboard(type: type),
               ],
             ),

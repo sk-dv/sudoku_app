@@ -154,7 +154,7 @@ class _SymbolButton extends StatelessWidget {
               child: state.type.token.isEmpty
                   ? const Text(
                       '1',
-                      style:  TextStyle(
+                      style: TextStyle(
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFFFFBF0),
@@ -162,7 +162,8 @@ class _SymbolButton extends StatelessWidget {
                       ),
                     )
                   : Padding(
-                      padding: state.type == TokenType.halloween || state.type == TokenType.cats
+                      padding: state.type == TokenType.halloween ||
+                              state.type == TokenType.cats
                           ? const EdgeInsets.all(4.0)
                           : EdgeInsets.zero,
                       child: Image.asset(

@@ -35,6 +35,16 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
 
   SudokuBoardCubit(this._apiService) : super(const SudokuBoardState());
 
+  void useHint() {
+    if (state.gameModel != null) {
+      emit(state.copyWith(gameModel: state.gameModel!.useHint()));
+    }
+  }
+
+  void undoLastMove() {
+    // Implementar si tienes historial
+  }
+
   Future<void> loadNewGame({
     int iterations = 70,
     String difficulty = 'MEDIUM',
@@ -52,10 +62,7 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
         difficulty: _mapDifficulty(difficulty),
       );
 
-      emit(state.copyWith(
-        gameModel: gameModel,
-        isLoading: false,
-      ));
+      emit(state.copyWith(gameModel: gameModel, isLoading: false));
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,
@@ -75,10 +82,7 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
         difficulty: _mapDifficulty(difficulty),
       );
 
-      emit(state.copyWith(
-        gameModel: gameModel,
-        isLoading: false,
-      ));
+      emit(state.copyWith(gameModel: gameModel, isLoading: false));
     } catch (e) {
       emit(state.copyWith(
         isLoading: false,
@@ -89,25 +93,19 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
 
   void selectCell(int row, int col) {
     if (state.gameModel != null) {
-      emit(state.copyWith(
-        gameModel: state.gameModel!.selectCell(row, col),
-      ));
+      emit(state.copyWith(gameModel: state.gameModel!.selectCell(row, col)));
     }
   }
 
   void enterNumber(int number) {
     if (state.gameModel != null) {
-      emit(state.copyWith(
-        gameModel: state.gameModel!.enterNumber(number),
-      ));
+      emit(state.copyWith(gameModel: state.gameModel!.enterNumber(number)));
     }
   }
 
   void clearCell() {
     if (state.gameModel != null) {
-      emit(state.copyWith(
-        gameModel: state.gameModel!.clearCell(),
-      ));
+      emit(state.copyWith(gameModel: state.gameModel!.clearCell()));
     }
   }
 

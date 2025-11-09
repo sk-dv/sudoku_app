@@ -14,6 +14,8 @@ class SudokuGameModel {
   final String formattedTime;
   final int secondsElapsed;
   final bool isCompleted;
+  final int hintsRemaining;
+  final int maxHints;
 
   const SudokuGameModel({
     required this.board,
@@ -27,6 +29,8 @@ class SudokuGameModel {
     required this.formattedTime,
     required this.secondsElapsed,
     this.isCompleted = false,
+    required this.hintsRemaining,
+    required this.maxHints,
   });
 
   factory SudokuGameModel.fromSudokuGame({
@@ -49,9 +53,32 @@ class SudokuGameModel {
       difficulty: difficulty,
       formattedTime: "00:00",
       secondsElapsed: 0,
+      hintsRemaining: 3,
+      maxHints: 3,
     );
 
     return model.checkErrors();
+  }
+
+  SudokuGameModel useHint() {
+    if (hintsRemaining > 0 && selectedRow >= 0 && selectedCol >= 0) {
+      return SudokuGameModel(
+        board: board,
+        isOriginal: isOriginal,
+        isSelected: isSelected,
+        isHighlighted: isHighlighted,
+        isErrorCell: isErrorCell,
+        selectedRow: selectedRow,
+        selectedCol: selectedCol,
+        difficulty: difficulty,
+        formattedTime: formattedTime,
+        secondsElapsed: secondsElapsed,
+        hintsRemaining: hintsRemaining - 1,
+        maxHints: maxHints,
+      );
+    }
+
+    return this;
   }
 
   SudokuGameModel selectCell(int row, int col) {
@@ -96,6 +123,8 @@ class SudokuGameModel {
       formattedTime: formattedTime,
       secondsElapsed: secondsElapsed,
       isCompleted: isCompleted,
+      hintsRemaining: hintsRemaining,
+      maxHints: maxHints,
     );
   }
 
@@ -119,6 +148,8 @@ class SudokuGameModel {
         formattedTime: formattedTime,
         secondsElapsed: secondsElapsed,
         isCompleted: isCompleted,
+        hintsRemaining: hintsRemaining,
+        maxHints: maxHints,
       );
 
       return updatedModel.checkErrors();
@@ -147,6 +178,8 @@ class SudokuGameModel {
         formattedTime: formattedTime,
         secondsElapsed: secondsElapsed,
         isCompleted: isCompleted,
+        hintsRemaining: hintsRemaining,
+        maxHints: maxHints,
       );
 
       return updatedModel.checkErrors();
@@ -245,6 +278,8 @@ class SudokuGameModel {
       formattedTime: formattedTime,
       secondsElapsed: secondsElapsed,
       isCompleted: isBoardComplete,
+      hintsRemaining: hintsRemaining,
+      maxHints: maxHints,
     );
   }
 
