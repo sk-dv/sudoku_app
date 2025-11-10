@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku_app/data/context_utils.dart';
+import 'package:sudoku_app/models/context_utils.dart';
 
 import 'package:sudoku_app/menu_screen.dart';
 import 'package:sudoku_app/game_background.dart';
@@ -9,8 +9,8 @@ import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 
-import 'data/game_step.dart';
-import 'data/token_type.dart';
+import 'models/game_step.dart';
+import 'models/token_type.dart';
 import 'widgets/pixelated_background.dart';
 import 'widgets/shadow_button.dart';
 import 'widgets/shadow_icon.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku_app/data/context_utils.dart';
+import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 
 class VictoryModal extends StatelessWidget {

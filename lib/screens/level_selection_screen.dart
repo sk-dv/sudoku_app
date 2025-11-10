@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:sudoku_app/data/context_utils.dart';
+import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';

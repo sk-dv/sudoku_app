@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../data/sudoku_game_model.dart';
+import '../models/sudoku_game_model.dart';
 import '../services/sudoku_api_service.dart';
 
 class SudokuBoardState extends Equatable {

@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../data/sudoku_game.dart';
+import '../models/sudoku_game.dart';
 
 class SudokuApiService {
   static const String baseUrl =

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
-import 'package:sudoku_app/data/sudoku_object.dart';
+import 'package:sudoku_app/models/sudoku_object.dart';
 import 'package:sudoku_app/widgets/sudoku_grid.dart';
 
 class SudokuBoard extends StatelessWidget {

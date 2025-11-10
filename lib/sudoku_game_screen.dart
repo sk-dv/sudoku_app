@@ -6,7 +6,7 @@ import 'package:sudoku_app/widgets/keyboard_mode.dart';
 import 'package:sudoku_app/widgets/sudoku_board.dart';
 import 'package:sudoku_app/widgets/game_controls.dart';
 
-import 'data/token_type.dart';
+import 'models/token_type.dart';
 
 class SudokuGameScreen extends StatelessWidget {
   const SudokuGameScreen({

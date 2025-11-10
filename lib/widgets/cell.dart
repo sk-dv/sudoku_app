@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:sudoku_app/data/style.dart';
-import 'package:sudoku_app/data/sudoku_object.dart';
-import 'package:sudoku_app/data/token_type.dart';
+import 'package:sudoku_app/models/style.dart';
+import 'package:sudoku_app/models/sudoku_object.dart';
+import 'package:sudoku_app/models/token_type.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 
 class Cell extends StatelessWidget {

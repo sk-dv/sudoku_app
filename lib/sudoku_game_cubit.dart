@@ -4,10 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
-import 'package:sudoku_app/data/style.dart';
+import 'package:sudoku_app/models/style.dart';
 import 'package:sudoku_app/sudoku.dart';
-import 'data/game_step.dart';
-import 'data/token_type.dart';
+import 'models/game_step.dart';
+import 'models/token_type.dart';
 
 class SudokuGameState extends Equatable {
   final GameStep step;
