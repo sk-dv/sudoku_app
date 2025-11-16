@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/models/context_utils.dart';
-import 'package:sudoku_app/sudoku_game_cubit.dart';
-import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
-import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
+import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/text_shadow.dart';
 
 class LevelSelectionScreen extends StatefulWidget {
@@ -43,11 +42,6 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     }
   }
 
-  void _selectLevel(BuildContext context, String difficulty) {
-    context.read<SudokuBoardCubit>().loadNewGame(difficulty: difficulty);
-    context.read<SudokuGameCubit>().play();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -79,50 +73,30 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                     child: Column(
                       children: [
                         _LevelCard(
-                          level: 'FÁCIL',
-                          difficulty: 'EASY',
-                          description: 'Perfecto para comenzar',
-                          color: const Color(0xFF4CAF50),
-                          count: _boardsSummary?['EASY'],
-                          onTap: () => _selectLevel(context, 'EASY'),
+                          difficulty: DifficultLevel.easy,
+                          count: (level) => _boardsSummary?[level],
                         ),
                         const SizedBox(height: 8),
                         _LevelCard(
-                          level: 'MEDIO',
-                          difficulty: 'MEDIUM',
-                          description: 'Un poco más desafiante',
-                          color: const Color(0xFF2196F3),
-                          count: _boardsSummary?['MEDIUM'],
-                          onTap: () => _selectLevel(context, 'MEDIUM'),
+                          difficulty: DifficultLevel.medium,
+                          count: (level) => _boardsSummary?[level],
                         ),
                         const SizedBox(height: 8),
                         _LevelCard(
-                          level: 'DIFÍCIL',
-                          difficulty: 'HARD',
-                          description: 'Para jugadores avanzados',
-                          color: const Color(0xFFFFC107),
-                          count: _boardsSummary?['HARD'],
-                          onTap: () => _selectLevel(context, 'HARD'),
+                          difficulty: DifficultLevel.hard,
+                          count: (level) => _boardsSummary?[level],
                         ),
                         const SizedBox(height: 8),
                         _LevelCard(
-                          level: 'EXPERTO',
-                          difficulty: 'EXPERT',
-                          description: 'Solo para expertos',
-                          color: const Color(0xFFFF9800),
-                          count: _boardsSummary?['EXPERT'],
-                          onTap: () => _selectLevel(context, 'EXPERT'),
+                          difficulty: DifficultLevel.expert,
+                          count: (level) => _boardsSummary?[level],
                         ),
                         const SizedBox(height: 8),
                         _LevelCard(
-                          level: 'MAESTRO',
-                          difficulty: 'MASTER',
-                          description: 'El desafío supremo',
-                          color: const Color(0xFFF44336),
-                          count: _boardsSummary?['MASTER'],
-                          onTap: () => _selectLevel(context, 'MASTER'),
+                          difficulty: DifficultLevel.master,
+                          count: (level) => _boardsSummary?[level],
                         ),
-                         SizedBox(height: context.height * 0.11),
+                        SizedBox(height: context.height * 0.11),
                       ],
                     ),
                   ),
@@ -134,26 +108,15 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
 }
 
 class _LevelCard extends StatelessWidget {
-  const _LevelCard({
-    required this.level,
-    required this.difficulty,
-    required this.description,
-    required this.color,
-    required this.onTap,
-    this.count,
-  });
+  const _LevelCard({required this.difficulty, this.count});
 
-  final String level;
-  final String difficulty;
-  final String description;
-  final Color color;
-  final int? count;
-  final VoidCallback onTap;
+  final DifficultLevel difficulty;
+  final int? Function(String level)? count;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: onTap,
+      onTap: () => context.read<SudokuGameCubit>().play(difficulty),
       child: FloatingCard(
         elevation: 6,
         padding: const EdgeInsets.all(10),
@@ -163,16 +126,12 @@ class _LevelCard extends StatelessWidget {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
+                color: difficulty.color.withValues(alpha: 0.2),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: color, width: 2),
+                border: Border.all(color: difficulty.color, width: 2),
               ),
               child: Center(
-                child: Icon(
-                  _getDifficultyIcon(difficulty),
-                  color: color,
-                  size: 22,
-                ),
+                child: Icon(difficulty.icon, color: difficulty.color, size: 22),
               ),
             ),
             const SizedBox(width: 10),
@@ -181,9 +140,9 @@ class _LevelCard extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    level,
+                    difficulty.level,
                     style: TextStyle(
-                      color: color,
+                      color: difficulty.color,
                       fontSize: 18,
                       fontFamily: 'Brick Sans',
                       letterSpacing: 2,
@@ -195,7 +154,7 @@ class _LevelCard extends StatelessWidget {
                     selector: (state) => state.style.borderColor,
                     builder: (context, textColor) {
                       return Text(
-                        description,
+                        difficulty.description,
                         style: TextStyle(
                           color: textColor.withValues(alpha: 0.7),
                           fontSize: 12,
@@ -213,17 +172,17 @@ class _LevelCard extends StatelessWidget {
                         vertical: 2,
                       ),
                       decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.2),
+                        color: difficulty.color.withValues(alpha: 0.2),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(
-                          color: color.withValues(alpha: 0.5),
+                          color: difficulty.color.withValues(alpha: 0.5),
                           width: 1,
                         ),
                       ),
                       child: Text(
-                        '$count puzzles',
+                        '${count?.call(difficulty.levelMap())} puzzles',
                         style: TextStyle(
-                          color: color,
+                          color: difficulty.color,
                           fontSize: 10,
                           fontFamily: 'Brick Sans',
                           fontWeight: FontWeight.bold,
@@ -234,11 +193,9 @@ class _LevelCard extends StatelessWidget {
                 ],
               ),
             ),
-
-            // Flecha
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: color,
+              color: difficulty.color,
               size: 24,
             ),
           ],
@@ -246,21 +203,102 @@ class _LevelCard extends StatelessWidget {
       ),
     );
   }
+}
 
-  IconData _getDifficultyIcon(String difficulty) {
-    switch (difficulty) {
-      case 'EASY':
+enum DifficultLevel {
+  easy,
+  medium,
+  hard,
+  expert,
+  master;
+
+  String get level {
+    switch (this) {
+      case DifficultLevel.easy:
+        return 'FÁCIL';
+      case DifficultLevel.medium:
+        return 'MEDIO';
+      case DifficultLevel.hard:
+        return 'DIFÍCIL';
+      case DifficultLevel.expert:
+        return 'EXPERTO';
+      case DifficultLevel.master:
+        return 'MAESTRO';
+    }
+  }
+
+  IconData get icon {
+    switch (this) {
+      case DifficultLevel.easy:
         return Icons.sentiment_satisfied_rounded;
-      case 'MEDIUM':
+      case DifficultLevel.medium:
         return Icons.auto_awesome_rounded;
-      case 'HARD':
+      case DifficultLevel.hard:
         return Icons.local_fire_department_rounded;
-      case 'EXPERT':
+      case DifficultLevel.expert:
         return Icons.workspace_premium_rounded;
-      case 'MASTER':
+      case DifficultLevel.master:
         return Icons.emoji_events_rounded;
-      default:
-        return Icons.help_outline_rounded;
+    }
+  }
+
+  String get description {
+    switch (this) {
+      case DifficultLevel.easy:
+        return 'Perfecto para comenzar';
+      case DifficultLevel.medium:
+        return 'Un poco más desafiante';
+      case DifficultLevel.hard:
+        return 'Para jugadores avanzados';
+      case DifficultLevel.expert:
+        return 'Solo para expertos';
+      case DifficultLevel.master:
+        return 'El desafío supremo';
+    }
+  }
+
+  Color get color {
+    switch (this) {
+      case DifficultLevel.easy:
+        return const Color(0xFF4CAF50);
+      case DifficultLevel.medium:
+        return const Color(0xFF2196F3);
+      case DifficultLevel.hard:
+        return const Color(0xFFFFC107);
+      case DifficultLevel.expert:
+        return const Color(0xFFFF9800);
+      case DifficultLevel.master:
+        return const Color(0xFFF44336);
+    }
+  }
+
+  String levelMap() {
+    switch (this) {
+      case DifficultLevel.easy:
+        return 'VERY_EASY';
+      case DifficultLevel.medium:
+        return 'EASY';
+      case DifficultLevel.hard:
+        return 'HARD';
+      case DifficultLevel.expert:
+        return 'VERY_HARD';
+      case DifficultLevel.master:
+        return 'MASTER';
+    }
+  }
+
+    String gameMap() {
+    switch (this) {
+      case DifficultLevel.easy:
+        return 'EASY';
+      case DifficultLevel.medium:
+        return 'MEDIUM';
+      case DifficultLevel.hard:
+        return 'HARD';
+      case DifficultLevel.expert:
+        return 'EXPERT';
+      case DifficultLevel.master:
+        return 'MASTER';
     }
   }
 }

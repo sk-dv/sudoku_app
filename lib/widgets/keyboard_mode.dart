@@ -122,13 +122,7 @@ class _NumberButtonState extends State<_NumberButton> {
     }
   }
 
-  void _hidePreview() {
-    NumberPreviewOverlay.hide();
-  }
-
-  void _handleTap(BuildContext context) {
-    context.read<SudokuBoardCubit>().enterNumber(widget.number);
-  }
+  void _hidePreview() => NumberPreviewOverlay.hide();
 
   @override
   Widget build(BuildContext context) {
@@ -140,7 +134,7 @@ class _NumberButtonState extends State<_NumberButton> {
           onTapDown: () => _showPreview(context, style),
           onTapUp: () {
             _hidePreview();
-            _handleTap(context);
+            context.read<SudokuBoardCubit>().enterNumber(widget.number);
           },
           onTapCancel: _hidePreview,
           width: widget.width,

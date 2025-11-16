@@ -32,15 +32,13 @@ class _StatsScreenState extends State<StatsScreen> {
       if (mounted) {
         setState(() {
           _stats = stats;
-          _boardsSummary = Map<String, int>.from(stats['by_difficulty'] ?? {});
+          _boardsSummary = Map<String, int>.from(stats['boards'] ?? {});
           _isLoading = false;
         });
       }
     } catch (e) {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }
@@ -144,8 +142,9 @@ class _StatsScreenState extends State<StatsScreen> {
                                   const SizedBox(width: 12),
                                   BlocSelector<SudokuGameCubit, SudokuGameState,
                                       Color>(
-                                    selector: (state) =>
-                                        state.style.borderColor,
+                                    selector: (state) {
+                                      return state.style.borderColor;
+                                    },
                                     builder: (context, color) {
                                       return Text(
                                         'POR DIFICULTAD',
@@ -178,14 +177,14 @@ class _StatsScreenState extends State<StatsScreen> {
                               const SizedBox(height: 12),
                               _DifficultyBar(
                                 label: 'DIFÍCIL',
-                                count: _boardsSummary?['VERY_HARD'] ?? 0,
+                                count: _boardsSummary?['HARD'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFFFFC107),
                               ),
                               const SizedBox(height: 12),
                               _DifficultyBar(
                                 label: 'EXPERTO',
-                                count: _boardsSummary?['MASTER'] ?? 0,
+                                count: _boardsSummary?['VERY_HARD'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFFFF9800),
                               ),

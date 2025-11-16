@@ -19,7 +19,7 @@ class Cell extends StatelessWidget {
   final int row;
   final int col;
   final SudokuObject sudokuObject;
-  final Function(int, int) onCellTap;
+  final void Function((int, int) cell) onCellTap;
 
   @override
   Widget build(BuildContext context) {
@@ -51,7 +51,7 @@ class Cell extends StatelessWidget {
         final bool needThickBottom = row == 2 || row == 5;
 
         return GestureDetector(
-          onTap: () => onCellTap(row, col),
+          onTap: () => onCellTap((row, col)),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 200),
             curve: Curves.easeInOut,
@@ -106,7 +106,9 @@ class ImageCell extends StatelessWidget {
       child: value == 0
           ? const SizedBox.shrink()
           : Padding(
-              padding: isHalloween || isCats ? const EdgeInsets.all(8.0) : EdgeInsets.zero,
+              padding: isHalloween || isCats
+                  ? const EdgeInsets.all(8.0)
+                  : EdgeInsets.zero,
               child: Image.asset('${path}0$value.png', fit: BoxFit.contain),
             ),
     );

@@ -9,19 +9,9 @@ import 'package:sudoku_app/widgets/game_controls.dart';
 import 'models/token_type.dart';
 
 class SudokuGameScreen extends StatelessWidget {
-  const SudokuGameScreen({
-    super.key,
-    required this.type,
-  });
+  const SudokuGameScreen({super.key, required this.type});
 
   final TokenType type;
-
-  void _handleHints(BuildContext context) {
-    // Placeholder para lógica de pistas
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Pista próximamente')),
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,28 +21,35 @@ class SudokuGameScreen extends StatelessWidget {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (state.gameModel == null) {
-          return const Center(child: Text('No hay juego disponible'));
-        }
-
         return Center(
           child: Container(
             padding: const EdgeInsets.all(5),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Controles encima del tablero
-                GameControls(
-                  onBack: () {},
-                  onHints: () => _handleHints(context),
-                  hintsCount: 3,
+                BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
+                  builder: (context, state) {
+                    final hintsRemaining = state.gameModel.hintsRemaining;
+                    return GameControls(
+                      onHints: () {
+                        if (hintsRemaining > 0) {
+                          context.read<SudokuBoardCubit>().useHint();
+                        } else {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('No hay pistas disponibles'),
+                            ),
+                          );
+                        }
+                      },
+                      hintsCount: hintsRemaining,
+                    );
+                  },
                 ),
-
                 const SizedBox(height: 16),
 
                 // Tablero
                 const SudokuBoard(),
-
                 const SizedBox(height: 20),
 
                 // Teclado

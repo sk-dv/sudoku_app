@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/models/context_utils.dart';
+import 'package:sudoku_app/models/sudoku_game_model.dart';
+import 'package:sudoku_app/screens/level_selection_screen.dart';
+import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
-import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/text_shadow.dart';
 
@@ -16,12 +18,8 @@ class DailyPuzzleScreen extends StatefulWidget {
 class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
   String? _selectedDifficulty;
 
-  void _playDailyPuzzle(BuildContext context, String difficulty) {
-    setState(() {
-      _selectedDifficulty = difficulty;
-    });
-    context.read<SudokuBoardCubit>().loadDailyGame(difficulty: difficulty);
-    context.read<SudokuGameCubit>().play();
+  void _onDifficultySelected(String difficulty) {
+    setState(() => _selectedDifficulty = difficulty);
   }
 
   @override
@@ -98,48 +96,33 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
                   ),
                   const SizedBox(height: 16),
                   _DailyDifficultyCard(
-                    level: 'FÁCIL',
-                    difficulty: 'EASY',
-                    color: const Color(0xFF4CAF50),
-                    onTap: () => _playDailyPuzzle(context, 'EASY'),
-                    isSelected: _selectedDifficulty == 'EASY',
-                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'EASY',
+                    difficulty: DifficultLevel.easy,
+                    selected: _selectedDifficulty,
+                    onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
-                    level: 'MEDIO',
-                    difficulty: 'MEDIUM',
-                    color: const Color(0xFF2196F3),
-                    onTap: () => _playDailyPuzzle(context, 'MEDIUM'),
-                    isSelected: _selectedDifficulty == 'MEDIUM',
-                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'MEDIUM',
+                    difficulty: DifficultLevel.medium,
+                    selected: _selectedDifficulty,
+                    onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
-                    level: 'DIFÍCIL',
-                    difficulty: 'HARD',
-                    color: const Color(0xFFFFC107),
-                    onTap: () => _playDailyPuzzle(context, 'HARD'),
-                    isSelected: _selectedDifficulty == 'HARD',
-                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'HARD',
+                    difficulty: DifficultLevel.hard,
+                    selected: _selectedDifficulty,
+                    onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
-                    level: 'EXPERTO',
-                    difficulty: 'EXPERT',
-                    color: const Color(0xFFFF9800),
-                    onTap: () => _playDailyPuzzle(context, 'EXPERT'),
-                    isSelected: _selectedDifficulty == 'EXPERT',
-                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'EXPERT',
+                    difficulty: DifficultLevel.expert,
+                    selected: _selectedDifficulty,
+                    onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
-                    level: 'MAESTRO',
-                    difficulty: 'MASTER',
-                    color: const Color(0xFFF44336),
-                    onTap: () => _playDailyPuzzle(context, 'MASTER'),
-                    isSelected: _selectedDifficulty == 'MASTER',
-                    isDisabled: _selectedDifficulty != null && _selectedDifficulty != 'MASTER',
+                    difficulty: DifficultLevel.master,
+                    selected: _selectedDifficulty,
+                    onDifficultySelected: _onDifficultySelected,
                   ),
                   SizedBox(height: context.height * 0.11),
                 ],
@@ -173,30 +156,45 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
 
 class _DailyDifficultyCard extends StatelessWidget {
   const _DailyDifficultyCard({
-    required this.level,
     required this.difficulty,
-    required this.color,
-    required this.onTap,
-    this.isSelected = false,
-    this.isDisabled = false,
+    required this.selected,
+    required this.onDifficultySelected,
   });
 
-  final String level;
-  final String difficulty;
-  final Color color;
-  final VoidCallback onTap;
-  final bool isSelected;
-  final bool isDisabled;
+  final DifficultLevel difficulty;
+  final String? selected;
+  final void Function(String) onDifficultySelected;
+
+  bool get isSelected => selected == difficulty.level;
+
+  bool get isDisabled => selected != null && selected != difficulty.level;
 
   @override
   Widget build(BuildContext context) {
-    final effectiveColor = isDisabled ? color.withValues(alpha: 0.3) : color;
+    final effectiveColor =
+        isDisabled ? difficulty.color.withValues(alpha: 0.3) : difficulty.color;
+
     final backgroundColor = isSelected
-        ? color.withValues(alpha: 0.3)
-        : color.withValues(alpha: 0.2);
+        ? difficulty.color.withValues(alpha: 0.3)
+        : difficulty.color.withValues(alpha: 0.2);
 
     return GestureDetector(
-      onTap: isDisabled ? null : onTap,
+      onTap: isDisabled
+          ? null
+          : () async {
+              onDifficultySelected(difficulty.level);
+
+              final cubit = context.read<SudokuGameCubit>();
+
+              final gameModel = SudokuGameModel.fromSudokuGame(
+                difficulty: difficulty,
+                sudokuGame: await SudokuApiService.getDailyGame(
+                  difficulty: difficulty.levelMap(),
+                ),
+              );
+
+              cubit.play(difficulty, gameModel);
+            },
       child: Opacity(
         opacity: isDisabled ? 0.4 : 1.0,
         child: FloatingCard(
@@ -216,7 +214,9 @@ class _DailyDifficultyCard extends StatelessWidget {
                   ),
                 ),
                 child: Icon(
-                  isSelected ? Icons.check_circle_rounded : Icons.play_arrow_rounded,
+                  isSelected
+                      ? Icons.check_circle_rounded
+                      : Icons.play_arrow_rounded,
                   color: effectiveColor,
                   size: 20,
                 ),
@@ -224,7 +224,7 @@ class _DailyDifficultyCard extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: Text(
-                  level,
+                  difficulty.level,
                   style: TextStyle(
                     color: effectiveColor,
                     fontSize: 15,

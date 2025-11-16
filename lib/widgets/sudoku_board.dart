@@ -12,11 +12,7 @@ class SudokuBoard extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
       builder: (context, state) {
-        if (state.gameModel == null) {
-          return const Center(child: Text('No hay juego disponible'));
-        }
-
-        final gameModel = state.gameModel!;
+        final gameModel = state.gameModel;
 
         // Convertir SudokuGameModel a List<List<SudokuObject>>
         final board = List.generate(
@@ -36,9 +32,7 @@ class SudokuBoard extends StatelessWidget {
         return SudokuGrid(
           boardObject: board,
           isCompleted: gameModel.isCompleted,
-          onCellTap: (row, col) {
-            context.read<SudokuBoardCubit>().selectCell(row, col);
-          },
+          onCellTap: context.read<SudokuBoardCubit>().selectCell,
         );
       },
     );

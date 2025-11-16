@@ -6,8 +6,6 @@ import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/menu_screen.dart';
 import 'package:sudoku_app/game_background.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
-import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
-import 'package:sudoku_app/services/sudoku_api_service.dart';
 
 import 'models/game_step.dart';
 import 'models/token_type.dart';
@@ -27,20 +25,14 @@ class Sudoku extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider(
-          create: (_) => SudokuGameCubit()..setupStyle(context),
-        ),
-        BlocProvider(
-          create: (_) => SudokuBoardCubit(SudokuApiService()),
-        ),
-      ],
+    return BlocProvider(
+      create: (_) => SudokuGameCubit()..setupStyle(context),
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         home: CloudsBackground(
-          builder: (context, onMenu) {
-            return onMenu ? const MenuScreen() : const GameBackground();
+          builder: (context, state) {
+            if (state.screen.isMenu) return const MenuScreen();
+            return GameBackground(gameModel: state.game);
           },
         ),
       ),
@@ -51,7 +43,7 @@ class Sudoku extends StatelessWidget {
 class CloudsBackground extends StatelessWidget {
   const CloudsBackground({super.key, required this.builder});
 
-  final Widget Function(BuildContext, bool) builder;
+  final Widget Function(BuildContext, SudokuGameState) builder;
 
   String _formatTime(int seconds) {
     final hours = seconds ~/ 3600;
@@ -121,7 +113,7 @@ class CloudsBackground extends StatelessWidget {
             stop: state.step == GameStep.stop,
             primaryColor: state.style.topBackground,
             secondaryColor: state.style.bottomBackground,
-            child: builder(context, state.screen.isMenu),
+            child: builder(context, state),
           ),
         );
       },

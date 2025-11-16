@@ -1,6 +1,6 @@
-import 'sudoku_game.dart';
+import 'package:sudoku_app/screens/level_selection_screen.dart';
 
-enum DifficultLevel { veryEasy, easy, medium, hard, veryHard, master }
+import 'sudoku_game.dart';
 
 class SudokuGameModel {
   final List<List<int>> board;
@@ -8,14 +8,15 @@ class SudokuGameModel {
   final List<List<bool>> isSelected;
   final List<List<bool>> isHighlighted;
   final List<List<bool>> isErrorCell;
-  final int selectedRow;
-  final int selectedCol;
+  final (int, int) selectedCell;
   final DifficultLevel difficulty;
   final String formattedTime;
   final int secondsElapsed;
   final bool isCompleted;
   final int hintsRemaining;
   final int maxHints;
+  final List<(int, int)> hintsCoordinates;
+  final List<List<int>> solutionGrid;
 
   const SudokuGameModel({
     required this.board,
@@ -23,15 +24,50 @@ class SudokuGameModel {
     required this.isSelected,
     required this.isHighlighted,
     required this.isErrorCell,
-    required this.selectedRow,
-    required this.selectedCol,
+    required this.selectedCell,
     required this.difficulty,
     required this.formattedTime,
     required this.secondsElapsed,
     this.isCompleted = false,
     required this.hintsRemaining,
     required this.maxHints,
+    this.hintsCoordinates = const [],
+    this.solutionGrid = const [],
   });
+
+  SudokuGameModel copy({
+    List<List<int>>? board,
+    List<List<bool>>? isOriginal,
+    List<List<bool>>? isSelected,
+    List<List<bool>>? isHighlighted,
+    List<List<bool>>? isErrorCell,
+    (int, int)? selectedCell,
+    DifficultLevel? difficulty,
+    String? formattedTime,
+    int? secondsElapsed,
+    bool? isCompleted,
+    int? hintsRemaining,
+    int? maxHints,
+    List<(int, int)>? hintsCoordinates,
+    List<List<int>>? solutionGrid,
+  }) {
+    return SudokuGameModel(
+      board: board ?? this.board,
+      isOriginal: isOriginal ?? this.isOriginal,
+      isSelected: isSelected ?? this.isSelected,
+      isHighlighted: isHighlighted ?? this.isHighlighted,
+      isErrorCell: isErrorCell ?? this.isErrorCell,
+      selectedCell: selectedCell ?? this.selectedCell,
+      difficulty: difficulty ?? this.difficulty,
+      formattedTime: formattedTime ?? this.formattedTime,
+      secondsElapsed: secondsElapsed ?? this.secondsElapsed,
+      isCompleted: isCompleted ?? this.isCompleted,
+      hintsRemaining: hintsRemaining ?? this.hintsRemaining,
+      maxHints: maxHints ?? this.maxHints,
+      hintsCoordinates: hintsCoordinates ?? this.hintsCoordinates,
+      solutionGrid: solutionGrid ?? this.solutionGrid,
+    );
+  }
 
   factory SudokuGameModel.fromSudokuGame({
     required SudokuGame sudokuGame,
@@ -48,62 +84,64 @@ class SudokuGameModel {
       isSelected: List.generate(9, (_) => List.generate(9, (_) => false)),
       isHighlighted: List.generate(9, (_) => List.generate(9, (_) => false)),
       isErrorCell: List.generate(9, (_) => List.generate(9, (_) => false)),
-      selectedRow: -1,
-      selectedCol: -1,
+      selectedCell: (-1, -1),
       difficulty: difficulty,
       formattedTime: "00:00",
       secondsElapsed: 0,
-      hintsRemaining: 3,
-      maxHints: 3,
+      hintsRemaining: sudokuGame.hintsCoordinates.length,
+      maxHints: sudokuGame.hintsCoordinates.length,
+      solutionGrid:
+          List.generate(9, (i) => List.from(sudokuGame.solutionGrid[i])),
+      hintsCoordinates:
+          sudokuGame.hintsCoordinates.map((c) => (c[0], c[1])).toList(),
     );
 
     return model.checkErrors();
   }
 
   SudokuGameModel useHint() {
-    if (hintsRemaining > 0 && selectedRow >= 0 && selectedCol >= 0) {
+    if (hintsRemaining > 0 && selectedCell.$1 >= 0 && selectedCell.$2 >= 0) {
       return SudokuGameModel(
         board: board,
         isOriginal: isOriginal,
         isSelected: isSelected,
         isHighlighted: isHighlighted,
         isErrorCell: isErrorCell,
-        selectedRow: selectedRow,
-        selectedCol: selectedCol,
+        selectedCell: selectedCell,
         difficulty: difficulty,
         formattedTime: formattedTime,
         secondsElapsed: secondsElapsed,
         hintsRemaining: hintsRemaining - 1,
         maxHints: maxHints,
+        hintsCoordinates: hintsCoordinates,
+        solutionGrid: solutionGrid,
       );
     }
 
     return this;
   }
 
-  SudokuGameModel selectCell(int row, int col) {
+  SudokuGameModel selectCell((int, int) cell) {
     final newIsSelected =
         List.generate(9, (i) => List.generate(9, (j) => false));
 
     final newIsHighlighted =
         List.generate(9, (i) => List.generate(9, (j) => false));
 
-    int newSelectedRow = -1;
-    int newSelectedCol = -1;
+    (int, int) newSelectedCell = (-1, -1);
 
-    if (row >= 0 && col >= 0) {
-      newIsSelected[row][col] = true;
-      newSelectedRow = row;
-      newSelectedCol = col;
+    if (cell.$1 >= 0 && cell.$2 >= 0) {
+      newIsSelected[cell.$1][cell.$2] = true;
+      newSelectedCell = cell;
 
       for (int i = 0; i < 9; i++) {
-        newIsHighlighted[row][i] = true;
-        newIsHighlighted[i][col] = true;
+        newIsHighlighted[cell.$1][i] = true;
+        newIsHighlighted[i][cell.$2] = true;
       }
 
       // Resaltar subcuadrícula 3x3
-      int startRow = (row ~/ 3) * 3;
-      int startCol = (col ~/ 3) * 3;
+      int startRow = (cell.$1 ~/ 3) * 3;
+      int startCol = (cell.$2 ~/ 3) * 3;
       for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 3; j++) {
           newIsHighlighted[startRow + i][startCol + j] = true;
@@ -111,78 +149,32 @@ class SudokuGameModel {
       }
     }
 
-    return SudokuGameModel(
-      board: board,
-      isOriginal: isOriginal,
+    return copy(
       isSelected: newIsSelected,
       isHighlighted: newIsHighlighted,
-      isErrorCell: isErrorCell,
-      selectedRow: newSelectedRow,
-      selectedCol: newSelectedCol,
-      difficulty: difficulty,
-      formattedTime: formattedTime,
-      secondsElapsed: secondsElapsed,
-      isCompleted: isCompleted,
-      hintsRemaining: hintsRemaining,
-      maxHints: maxHints,
+      selectedCell: newSelectedCell,
     );
   }
 
   SudokuGameModel enterNumber(int number) {
-    if (selectedRow >= 0 &&
-        selectedCol >= 0 &&
-        !isOriginal[selectedRow][selectedCol]) {
+    if (selectedCell.$1 >= 0 &&
+        selectedCell.$2 >= 0 &&
+        !isOriginal[selectedCell.$1][selectedCell.$2]) {
       List<List<int>> newBoard = List.generate(9, (i) => List.from(board[i]));
 
-      newBoard[selectedRow][selectedCol] = number;
-
-      final updatedModel = SudokuGameModel(
-        board: newBoard,
-        isOriginal: isOriginal,
-        isSelected: isSelected,
-        isHighlighted: isHighlighted,
-        isErrorCell: isErrorCell,
-        selectedRow: selectedRow,
-        selectedCol: selectedCol,
-        difficulty: difficulty,
-        formattedTime: formattedTime,
-        secondsElapsed: secondsElapsed,
-        isCompleted: isCompleted,
-        hintsRemaining: hintsRemaining,
-        maxHints: maxHints,
-      );
-
-      return updatedModel.checkErrors();
+      newBoard[selectedCell.$1][selectedCell.$2] = number;
+      return copy(board: newBoard).checkErrors();
     }
 
     return this;
   }
 
   SudokuGameModel clearCell() {
-    if (selectedRow >= 0 &&
-        selectedCol >= 0 &&
-        !isOriginal[selectedRow][selectedCol]) {
+    if (!isOriginal[selectedCell.$1][selectedCell.$2]) {
       List<List<int>> newBoard = List.generate(9, (i) => List.from(board[i]));
 
-      newBoard[selectedRow][selectedCol] = 0;
-
-      final updatedModel = SudokuGameModel(
-        board: newBoard,
-        isOriginal: isOriginal,
-        isSelected: isSelected,
-        isHighlighted: isHighlighted,
-        isErrorCell: isErrorCell,
-        selectedRow: selectedRow,
-        selectedCol: selectedCol,
-        difficulty: difficulty,
-        formattedTime: formattedTime,
-        secondsElapsed: secondsElapsed,
-        isCompleted: isCompleted,
-        hintsRemaining: hintsRemaining,
-        maxHints: maxHints,
-      );
-
-      return updatedModel.checkErrors();
+      newBoard[selectedCell.$1][selectedCell.$2] = 0;
+      return copy(board: newBoard).checkErrors();
     }
 
     return this;
@@ -265,22 +257,7 @@ class SudokuGameModel {
 
     // Verificar si está completo (sin errores y sin celdas vacías)
     bool isBoardComplete = !hasErrors && _isBoardFull();
-
-    return SudokuGameModel(
-      board: board,
-      isOriginal: isOriginal,
-      isSelected: isSelected,
-      isHighlighted: isHighlighted,
-      isErrorCell: newIsErrorCell,
-      selectedRow: selectedRow,
-      selectedCol: selectedCol,
-      difficulty: difficulty,
-      formattedTime: formattedTime,
-      secondsElapsed: secondsElapsed,
-      isCompleted: isBoardComplete,
-      hintsRemaining: hintsRemaining,
-      maxHints: maxHints,
-    );
+    return copy(isErrorCell: newIsErrorCell, isCompleted: isBoardComplete);
   }
 
   bool _isBoardFull() {
@@ -292,5 +269,15 @@ class SudokuGameModel {
       }
     }
     return true;
+  }
+}
+
+extension SudokuGameModelList on SudokuGameModel {
+  bool originalAt((int, int) coord) {
+    return isOriginal[coord.$1][coord.$2];
+  }
+
+  int valueAt((int, int) coord) {
+    return board[coord.$1][coord.$2];
   }
 }

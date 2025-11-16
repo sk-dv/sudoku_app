@@ -10,7 +10,7 @@ import 'package:sudoku_app/widgets/grid.dart';
 
 class SudokuGrid extends StatelessWidget {
   final List<List<SudokuObject>> boardObject;
-  final Function(int, int) onCellTap;
+  final Function((int, int)) onCellTap;
   final bool isCompleted;
 
   const SudokuGrid({
@@ -30,9 +30,8 @@ class SudokuGrid extends StatelessWidget {
           child: BlocSelector<SudokuGameCubit, SudokuGameState, SudokuStyle>(
             selector: (state) => state.style,
             builder: (context, style) {
-              final borderColor = isCompleted
-                  ? style.successCell
-                  : style.background;
+              final borderColor =
+                  isCompleted ? style.successCell : style.background;
 
               return AnimatedContainer(
                 duration: const Duration(milliseconds: 500),

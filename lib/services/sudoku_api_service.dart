@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:sudoku_app/screens/level_selection_screen.dart';
 import '../models/sudoku_game.dart';
 
 class SudokuApiService {
@@ -8,18 +9,13 @@ class SudokuApiService {
 
   /// Genera un nuevo puzzle de Sudoku
   ///
-  /// [iterations]: Número de iteraciones (10-200, default: 70)
   /// [difficulty]: Nivel de dificultad (EASY, MEDIUM, HARD, EXPERT, MASTER)
-  Future<SudokuGame> getGame({
-    int iterations = 70,
-    String difficulty = 'MEDIUM',
+  static Future<SudokuGame> getGame({
+    DifficultLevel difficulty = DifficultLevel.medium,
   }) async {
     final response = await http.get(
       Uri.parse('$baseUrl/game').replace(
-        queryParameters: {
-          'iterations': iterations.toString(),
-          'difficulty': difficulty,
-        },
+        queryParameters: {'difficulty': difficulty.gameMap()},
       ),
     );
 
@@ -33,7 +29,7 @@ class SudokuApiService {
   /// Obtiene el puzzle del día según dificultad
   ///
   /// [difficulty]: Nivel de dificultad (EASY, MEDIUM, HARD, EXPERT, MASTER)
-  Future<SudokuGame> getDailyGame({String difficulty = 'MEDIUM'}) async {
+  static Future<SudokuGame> getDailyGame({String difficulty = 'MEDIUM'}) async {
     final response = await http.get(
       Uri.parse('$baseUrl/daily')
           .replace(queryParameters: {'difficulty': difficulty}),

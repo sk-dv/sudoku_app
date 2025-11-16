@@ -5,6 +5,8 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:sudoku_app/models/style.dart';
+import 'package:sudoku_app/models/sudoku_game_model.dart';
+import 'package:sudoku_app/screens/level_selection_screen.dart';
 import 'package:sudoku_app/sudoku.dart';
 import 'models/game_step.dart';
 import 'models/token_type.dart';
@@ -15,6 +17,8 @@ class SudokuGameState extends Equatable {
   final SudokuStyle style;
   final GameScreen screen;
   final int elapsedSeconds;
+  final DifficultLevel difficulty;
+  final SudokuGameModel? game;
 
   const SudokuGameState({
     required this.step,
@@ -22,6 +26,8 @@ class SudokuGameState extends Equatable {
     required this.style,
     required this.screen,
     this.elapsedSeconds = 0,
+    required this.difficulty,
+    this.game,
   });
 
   factory SudokuGameState.empty() {
@@ -29,22 +35,36 @@ class SudokuGameState extends Equatable {
       step: GameStep.play,
       type: TokenType.number,
       style: SudokuLightStyle(),
+      difficulty: DifficultLevel.medium,
       screen: GameScreen.menu,
+      game: null,
     );
   }
 
-  SudokuGameState copy({GameStep? step, TokenType? type, SudokuStyle? style, GameScreen? screen, int? elapsedSeconds}) {
+  SudokuGameState copy({
+    GameStep? step,
+    TokenType? type,
+    SudokuStyle? style,
+    int? elapsedSeconds,
+    DifficultLevel? difficulty,
+    SudokuGameModel? game,
+    GameScreen? screen,
+  }) {
     return SudokuGameState(
       step: step ?? this.step,
       type: type ?? this.type,
       style: style ?? this.style,
       screen: screen ?? this.screen,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
+      difficulty: difficulty ?? this.difficulty,
+      game: game ?? this.game,
     );
   }
 
   @override
-  List<Object> get props => [step, type, style, screen, elapsedSeconds];
+  List<Object> get props {
+    return [step, type, style, screen, elapsedSeconds, difficulty];
+  }
 }
 
 class SudokuGameCubit extends Cubit<SudokuGameState> {
@@ -89,14 +109,21 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
     ));
   }
 
-  void play() {
-    emit(state.copy(screen: GameScreen.game, elapsedSeconds: 0, step: GameStep.play));
+  void play(DifficultLevel difficulty, [SudokuGameModel? game]) {
+    emit(state.copy(
+      screen: GameScreen.game,
+      elapsedSeconds: 0,
+      step: GameStep.play,
+      difficulty: difficulty,
+      game: game,
+    ));
+
     _startTimer();
   }
 
   void back() {
     _timer?.cancel();
-    emit(state.copy(screen: GameScreen.menu, elapsedSeconds: 0));
+    emit(state.copy(elapsedSeconds: 0, screen: GameScreen.menu, game: null));
   }
 
   void stopTimer() {

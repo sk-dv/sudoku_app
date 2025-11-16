@@ -5,9 +5,9 @@ class SudokuGame {
   final bool solutionIsValid;
   final String difficultyLevel;
   final double difficultyCoefficient;
-  final int iterationsUsed;
   final int emptyCells;
   final bool cached;
+  final List<List<int>> hintsCoordinates;
 
   SudokuGame({
     required this.playableGrid,
@@ -16,9 +16,9 @@ class SudokuGame {
     required this.solutionIsValid,
     required this.difficultyLevel,
     required this.difficultyCoefficient,
-    required this.iterationsUsed,
     required this.emptyCells,
     required this.cached,
+    required this.hintsCoordinates,
   });
 
   factory SudokuGame.empty() {
@@ -29,9 +29,9 @@ class SudokuGame {
       solutionIsValid: false,
       difficultyLevel: 'unknown',
       difficultyCoefficient: 0.0,
-      iterationsUsed: 0,
       emptyCells: 81,
       cached: false,
+      hintsCoordinates: List.empty(),
     );
   }
 
@@ -50,9 +50,12 @@ class SudokuGame {
       solutionIsValid: json['solution']['is_valid'],
       difficultyLevel: json['difficulty']['level'],
       difficultyCoefficient: json['difficulty']['coefficient'].toDouble(),
-      iterationsUsed: json['metadata']['iterations_used'],
       emptyCells: json['metadata']['empty_cells'],
       cached: json['metadata']['cached'],
+      hintsCoordinates: List<List<int>>.from(
+        json['metadata']['hints_coordinates']?.map((c) => List<int>.from(c)) ??
+            [],
+      ),
     );
   }
 
@@ -63,7 +66,6 @@ class SudokuGame {
         'coefficient: $difficultyCoefficient, '
         'emptyCells: $emptyCells, '
         'cached: $cached, '
-        'iterations: $iterationsUsed'
         ')';
   }
 }
