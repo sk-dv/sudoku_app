@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
+import 'package:sudoku_app/models/game_progress.dart';
+import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/widgets/keyboard_mode.dart';
 import 'package:sudoku_app/widgets/sudoku_board.dart';
 import 'package:sudoku_app/widgets/game_controls.dart';
@@ -9,9 +11,14 @@ import 'package:sudoku_app/widgets/game_controls.dart';
 import 'models/token_type.dart';
 
 class SudokuGameScreen extends StatelessWidget {
-  const SudokuGameScreen({super.key, required this.type});
+  const SudokuGameScreen({
+    super.key,
+    required this.type,
+    required this.elapsedSeconds,
+  });
 
   final TokenType type;
+  final int elapsedSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -29,20 +36,17 @@ class SudokuGameScreen extends StatelessWidget {
               children: [
                 BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
                   builder: (context, state) {
-                    final hintsRemaining = state.gameModel.hintsRemaining;
                     return GameControls(
-                      onHints: () {
-                        if (hintsRemaining > 0) {
-                          context.read<SudokuBoardCubit>().useHint();
-                        } else {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('No hay pistas disponibles'),
-                            ),
-                          );
-                        }
-                      },
-                      hintsCount: hintsRemaining,
+                      onSave: () async => context
+                          .read<SudokuGameCubit>()
+                          .saveGameProgress(SavedGame(
+                            model: state.gameModel,
+                            idx: state.idx,
+                            source: GameSource.level,
+                            elapsedSeconds: elapsedSeconds,
+                          )),
+                      onHints: context.read<SudokuBoardCubit>().useHint,
+                      hintsCount: state.gameModel.hintsRemaining,
                     );
                   },
                 ),

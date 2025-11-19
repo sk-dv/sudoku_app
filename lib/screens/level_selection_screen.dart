@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/models/context_utils.dart';
+import 'package:sudoku_app/services/game_save_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
@@ -17,11 +18,21 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   final SudokuApiService _apiService = SudokuApiService();
   Map<String, int>? _boardsSummary;
   bool _isLoading = true;
+  bool _hasSavedGame = false;
 
   @override
   void initState() {
     super.initState();
     _loadBoardsSummary();
+    _checkSavedGame();
+  }
+
+  Future<void> _checkSavedGame() async {
+    final hasSaved = await GameSaveService.hasSavedGame();
+
+    setState(() {
+      _hasSavedGame = hasSaved;
+    });
   }
 
   Future<void> _loadBoardsSummary() async {
@@ -40,6 +51,18 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         });
       }
     }
+  }
+
+  void _continueSavedGame(BuildContext context, String gameId) {
+    context.read<SudokuGameCubit>().loadSavedGame(gameId);
+    // context.read<SudokuGameCubit>().play();
+  }
+
+  void _discardSavedGame() {
+    GameSaveService.deleteAllSavedGames();
+    setState(() {
+      _hasSavedGame = false;
+    });
   }
 
   @override
@@ -72,6 +95,15 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                 : SingleChildScrollView(
                     child: Column(
                       children: [
+                        if (_hasSavedGame) ...[
+                          _ContinueGameCard(
+                            onContinue: (gameId) {
+                              _continueSavedGame(context, gameId);
+                            },
+                            onDiscard: _discardSavedGame,
+                          ),
+                          const SizedBox(height: 24),
+                        ],
                         _LevelCard(
                           difficulty: DifficultLevel.easy,
                           count: (level) => _boardsSummary?[level],
@@ -287,7 +319,7 @@ enum DifficultLevel {
     }
   }
 
-    String gameMap() {
+  String gameMap() {
     switch (this) {
       case DifficultLevel.easy:
         return 'EASY';
@@ -300,5 +332,121 @@ enum DifficultLevel {
       case DifficultLevel.master:
         return 'MASTER';
     }
+  }
+}
+
+class _ContinueGameCard extends StatelessWidget {
+  final void Function(String gameId) onContinue;
+  final VoidCallback onDiscard;
+
+  const _ContinueGameCard({
+    required this.onContinue,
+    required this.onDiscard,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final savedGame = GameSaveService.getLatestSavedGame();
+
+    return BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
+      selector: (state) => state.style.selectedCell,
+      builder: (context, color) {
+        return FloatingCard(
+          elevation: 8,
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  Icon(Icons.history_rounded, color: color, size: 24),
+                  const SizedBox(width: 12),
+                  Text(
+                    'CONTINUAR JUEGO',
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: color,
+                      fontFamily: 'Brick Sans',
+                      letterSpacing: 2,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              if (savedGame != null) ...[
+                Text(
+                  'Dificultad: ${savedGame.difficulty.name.toUpperCase()}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: color.withValues(alpha: 0.7),
+                    fontFamily: 'Brick Sans',
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Pistas: ${savedGame.hintIdx}',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: color.withValues(alpha: 0.7),
+                    fontFamily: 'Brick Sans',
+                  ),
+                ),
+              ],
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () => onContinue(savedGame!.id),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'CONTINUAR',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            fontFamily: 'Brick Sans',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: onDiscard,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                        decoration: BoxDecoration(
+                          border: Border.all(color: color),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: Text(
+                          'DESCARTAR',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: color,
+                            fontSize: 12,
+                            fontFamily: 'Brick Sans',
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
   }
 }

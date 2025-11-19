@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-
 import 'package:flutter_bloc/flutter_bloc.dart';
-
 import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/widgets/floating_card.dart';
+import 'package:sudoku_app/widgets/shadow_button.dart';
 
-class TokenSelector extends StatelessWidget {
-  const TokenSelector({super.key});
+class PauseDialog extends StatelessWidget {
+  const PauseDialog({super.key});
 
   String _formatTime(int seconds) {
     final hours = seconds ~/ 3600;
@@ -20,169 +20,133 @@ class TokenSelector extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SudokuGameCubit, SudokuGameState>(
-      builder: (context, state) {
-        final style = state.style;
-        final elapsedTime = state.elapsedSeconds;
+    return Dialog(
+      backgroundColor: Colors.transparent,
+      child: BlocBuilder<SudokuGameCubit, SudokuGameState>(
+        builder: (context, state) {
+          final style = state.style;
 
-        return Container(
-          padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: style.background,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          ),
-          child: Column(
-            children: [
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  color: style.selectedCell,
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  Icons.pause_circle_outline_rounded,
-                  size: 35,
-                  color: style.background,
-                ),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                'PAUSA',
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w900,
-                  color: style.selectedCell,
-                  fontFamily: 'Brick Sans',
-                  letterSpacing: 2,
-                ),
-              ),
-              const SizedBox(height: 12),
-              Text(
-                'Tiempo transcurrido',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: style.borderColor,
-                  fontFamily: 'Brick Sans',
-                  letterSpacing: 1,
-                ),
-              ),
-              const SizedBox(height: 24),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-                decoration: BoxDecoration(
-                  color: style.cellColor.withValues(alpha: 0.2),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: style.selectedCell.withValues(alpha: 0.3),
-                    width: 2,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.timer_outlined,
-                      color: style.selectedCell,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 12),
-                    Text(
-                      _formatTime(elapsedTime),
-                      style: TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.bold,
-                        color: style.selectedCell,
-                        fontFamily: 'Brick Sans',
-                        letterSpacing: 1,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-              GestureDetector(
-                onTap: () {
-                  Navigator.pop(context);
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: style.selectedCell,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.play_arrow_rounded,
-                        color: style.background,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'CONTINUAR',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          color: style.background,
-                          fontFamily: 'Brick Sans',
-                          letterSpacing: 2,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              GestureDetector(
-                onTap: () async {
-                  Navigator.of(context).pop();
-                  await Future.delayed(
-                    const Duration(milliseconds: 500),
-                    context.read<SudokuGameCubit>().back,
-                  );
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.transparent,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: style.selectedCell,
-                      width: 2,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(
-                        Icons.home_rounded,
-                        color: style.selectedCell,
-                        size: 24,
-                      ),
-                      const SizedBox(width: 12),
-                      Text(
-                        'VOLVER AL MENÚ',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
+          return ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 280),
+            child: FloatingCard(
+              elevation: 6,
+              padding:  EdgeInsets.zero,
+              child: Stack(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const SizedBox(height: 8),
+                        Icon(
+                          Icons.pause_rounded,
+                          size: 40,
                           color: style.selectedCell,
-                          fontFamily: 'Brick Sans',
-                          letterSpacing: 2,
+                        ),
+                        const SizedBox(height: 12),
+                        Text(
+                          _formatTime(state.elapsedSeconds),
+                          style: TextStyle(
+                            fontSize: 28,
+                            fontWeight: FontWeight.bold,
+                            color: style.selectedCell,
+                            fontFamily: 'Brick Sans',
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 20),
+                        GestureDetector(
+                          onTap: () => Navigator.pop(context),
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              color: style.selectedCell,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            child: Text(
+                              'CONTINUAR',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: style.background,
+                                fontFamily: 'Brick Sans',
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                        GestureDetector(
+                          onTap: () async {
+                            Navigator.of(context).pop();
+                            await Future.delayed(
+                              const Duration(milliseconds: 500),
+                              context.read<SudokuGameCubit>().back,
+                            );
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            decoration: BoxDecoration(
+                              borderRadius: BorderRadius.circular(10),
+                              border: Border.all(
+                                color: style.selectedCell,
+                                width: 2,
+                              ),
+                            ),
+                            child: Text(
+                              'MENÚ',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: style.selectedCell,
+                                fontFamily: 'Brick Sans',
+                                letterSpacing: 1.5,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Positioned(
+                    top: 2,
+                    right: 0,
+                    child: ShadowButton(
+                      radius: 20,
+                      containerSize: const (36, 36),
+                      shadowSize: const (32, 32),
+                      restSpace: 4,
+                      pressedSpace: 3,
+                      shadowOffset: const Offset(-3, 2),
+                      shadowColor: style.cellColor.withValues(alpha: 0.5),
+                      onPressed: () => Navigator.pop(context),
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 4, top: 4),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(20),
+                          color: style.themeColor,
+                        ),
+                        child: const Center(
+                          child: Icon(
+                            Icons.close_rounded,
+                            size: 16,
+                            color: Color(0xFFFFFBF0),
+                          ),
                         ),
                       ),
-                    ],
+                    ),
                   ),
-                ),
+                ],
               ),
-            ],
-          ),
-        );
-      },
+            ),
+          );
+        },
+      ),
     );
   }
 }

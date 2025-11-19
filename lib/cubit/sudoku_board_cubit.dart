@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../models/sudoku_game_model.dart';
-import '../services/game_command_manager.dart';
+import 'package:sudoku_app/models/sudoku_game_model.dart';
+import 'package:sudoku_app/services/game_command_manager.dart';
 
 class SudokuBoardState extends Equatable {
   final SudokuGameModel gameModel;
@@ -40,7 +40,6 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
   SudokuBoardCubit(SudokuGameModel gameModel)
       : super(SudokuBoardState(gameModel: gameModel));
 
-  /// Usa una pista: revela una celda de la solución
   void useHint() {
     final currentModel = state.gameModel;
 
@@ -68,7 +67,6 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
     ));
   }
 
-  /// Deshace el último movimiento
   void undoLastMove() {
     if (!_commandManager.hasCommands) return;
 
@@ -93,16 +91,10 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
   void enterNumber(int number) {
     final currentModel = state.gameModel;
 
-    // Validar que la celda no sea original
     if (currentModel.originalAt(currentModel.selectedCell)) return;
-
-    // Capturar el valor anterior
     final previousValue = currentModel.valueAt(currentModel.selectedCell);
-
-    // Calcular métricas
     final boardProgress = _commandManager.calculateBoardProgress(currentModel);
 
-    // Crear comando
     final command = _commandManager.createPlaceNumberCommand(
       cell: currentModel.selectedCell,
       value: number,
@@ -110,7 +102,6 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
       boardProgressPercentage: boardProgress,
     );
 
-    // Ejecutar comando y emitir nuevo estado
     final newModel = _commandManager.executeCommand(command, currentModel);
     emit(state.copyWith(gameModel: newModel));
   }
@@ -123,7 +114,6 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
     final removedValue = currentModel.valueAt(currentModel.selectedCell);
     if (removedValue == 0) return;
 
-    // Crear comando
     final command = _commandManager.createRemoveNumberCommand(
       cell: currentModel.selectedCell,
       removedValue: removedValue,
@@ -132,7 +122,6 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
       ),
     );
 
-    // Ejecutar comando y emitir nuevo estado
     final newModel = _commandManager.executeCommand(command, currentModel);
     emit(state.copyWith(gameModel: newModel));
   }

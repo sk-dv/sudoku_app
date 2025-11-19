@@ -4,25 +4,69 @@ import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
 import 'package:sudoku_app/widgets/shadow_button.dart';
 
-/// Widget que muestra los controles encima del tablero
 class GameControls extends StatelessWidget {
   final VoidCallback onHints;
+  final VoidCallback onSave;
   final int hintsCount;
 
   const GameControls({
     super.key,
     required this.onHints,
+    required this.onSave,
     required this.hintsCount,
   });
 
-  /// Helper para crear botones de control reutilizables
-  Widget _buildControlButton({
-    required BuildContext context,
-    required IconData icon,
-    required VoidCallback onPressed,
-    int? badgeCount,
-    bool isEnabled = true,
-  }) {
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          _ControlButton(icon: Icons.save_rounded, onPressed: onSave),
+          Row(
+            children: [
+              BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
+                builder: (context, state) {
+                  return _ControlButton(
+                    icon: Icons.undo_rounded,
+                    onPressed: context.read<SudokuBoardCubit>().undoLastMove,
+                    isEnabled: context.read<SudokuBoardCubit>().canUndo,
+                    badgeCount: context.read<SudokuBoardCubit>().canUndo
+                        ? context.read<SudokuBoardCubit>().undoMovements
+                        : null,
+                  );
+                },
+              ),
+              const SizedBox(width: 8),
+              _ControlButton(
+                icon: Icons.lightbulb_rounded,
+                onPressed: onHints,
+                badgeCount: hintsCount,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ControlButton extends StatelessWidget {
+  const _ControlButton({
+    required this.icon,
+    required this.onPressed,
+    this.badgeCount,
+    this.isEnabled = true,
+  });
+
+  final IconData icon;
+  final VoidCallback onPressed;
+  final int? badgeCount;
+  final bool isEnabled;
+
+  @override
+  Widget build(BuildContext context) {
     return BlocBuilder<SudokuGameCubit, SudokuGameState>(
       builder: (context, state) {
         final style = state.style;
@@ -80,43 +124,6 @@ class GameControls extends StatelessWidget {
           ),
         );
       },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          // Botón Undo
-          BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
-            builder: (context, state) {
-              return _buildControlButton(
-                context: context,
-                icon: Icons.undo_rounded,
-                onPressed: context.read<SudokuBoardCubit>().undoLastMove,
-                isEnabled: context.read<SudokuBoardCubit>().canUndo,
-                badgeCount: context.read<SudokuBoardCubit>().canUndo
-                    ? context.read<SudokuBoardCubit>().undoMovements
-                    : null,
-              );
-            },
-          ),
-
-          const SizedBox(width: 8),
-
-          // Botón Hints con badge
-          _buildControlButton(
-            context: context,
-            icon: Icons.lightbulb_rounded,
-            onPressed: onHints,
-            badgeCount: hintsCount,
-            isEnabled: hintsCount > 0,
-          ),
-        ],
-      ),
     );
   }
 }

@@ -60,9 +60,10 @@ class GameBackground extends StatelessWidget {
       listenWhen: (prev, next) => prev.step != next.step,
       listener: (context, state) {
         if (state.step == GameStep.stop) {
-          showModalBottomSheet(
+          showDialog(
             context: context,
-            builder: (context) => const TokenSelector(),
+            barrierDismissible: false,
+            builder: (context) => const PauseDialog(),
           ).whenComplete(context.read<SudokuGameCubit>().toggleGame);
         }
       },
@@ -91,7 +92,10 @@ class GameBackground extends StatelessWidget {
                     );
                   }
                 },
-                child: SudokuGameScreen(type: state.type),
+                child: SudokuGameScreen(
+                  type: state.type,
+                  elapsedSeconds: state.elapsedSeconds,
+                ),
               ),
             );
           },

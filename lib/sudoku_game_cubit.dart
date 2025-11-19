@@ -8,8 +8,10 @@ import 'package:sudoku_app/models/style.dart';
 import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/screens/level_selection_screen.dart';
 import 'package:sudoku_app/sudoku.dart';
+import 'models/game_progress.dart';
 import 'models/game_step.dart';
 import 'models/token_type.dart';
+import 'services/game_save_service.dart';
 
 class SudokuGameState extends Equatable {
   final GameStep step;
@@ -71,6 +73,25 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
   Timer? _timer;
 
   SudokuGameCubit() : super(SudokuGameState.empty());
+
+  Future<void> saveGameProgress(SavedGame game) async {
+    final progress = GameProgress.fromGameModel(game);
+    await GameSaveService.saveGame(progress);
+  }
+
+  Future<void> loadSavedGame(String gameId) async {
+    final progress = GameSaveService.loadGame(gameId);
+
+    if (progress == null) return;
+
+    emit(state.copy(
+      screen: GameScreen.game,
+      step: GameStep.play,
+      difficulty: progress.difficulty,
+      game: progress.toSudokuGameModel(),
+      elapsedSeconds: progress.timeElapsed,
+    ));
+  }
 
   void setupStyle(BuildContext context) {
     emit(state.copy(

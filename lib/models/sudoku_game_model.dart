@@ -10,7 +10,6 @@ class SudokuGameModel {
   final List<List<bool>> isErrorCell;
   final (int, int) selectedCell;
   final DifficultLevel difficulty;
-  final String formattedTime;
   final int secondsElapsed;
   final bool isCompleted;
   final int hintsRemaining;
@@ -26,7 +25,6 @@ class SudokuGameModel {
     required this.isErrorCell,
     required this.selectedCell,
     required this.difficulty,
-    required this.formattedTime,
     required this.secondsElapsed,
     this.isCompleted = false,
     required this.hintsRemaining,
@@ -43,7 +41,6 @@ class SudokuGameModel {
     List<List<bool>>? isErrorCell,
     (int, int)? selectedCell,
     DifficultLevel? difficulty,
-    String? formattedTime,
     int? secondsElapsed,
     bool? isCompleted,
     int? hintsRemaining,
@@ -59,7 +56,6 @@ class SudokuGameModel {
       isErrorCell: isErrorCell ?? this.isErrorCell,
       selectedCell: selectedCell ?? this.selectedCell,
       difficulty: difficulty ?? this.difficulty,
-      formattedTime: formattedTime ?? this.formattedTime,
       secondsElapsed: secondsElapsed ?? this.secondsElapsed,
       isCompleted: isCompleted ?? this.isCompleted,
       hintsRemaining: hintsRemaining ?? this.hintsRemaining,
@@ -73,25 +69,24 @@ class SudokuGameModel {
     required SudokuGame sudokuGame,
     DifficultLevel difficulty = DifficultLevel.medium,
   }) {
-    List<List<bool>> newIsOriginal = List.generate(
-      9,
-      (i) => List.generate(9, (j) => sudokuGame.playableGrid[i][j] != 0),
-    );
-
     final model = SudokuGameModel(
       board: List.generate(9, (i) => List.from(sudokuGame.playableGrid[i])),
-      isOriginal: newIsOriginal,
+      isOriginal: List.generate(
+        9,
+        (i) => List.generate(9, (j) => sudokuGame.playableGrid[i][j] != 0),
+      ),
       isSelected: List.generate(9, (_) => List.generate(9, (_) => false)),
       isHighlighted: List.generate(9, (_) => List.generate(9, (_) => false)),
       isErrorCell: List.generate(9, (_) => List.generate(9, (_) => false)),
       selectedCell: (-1, -1),
       difficulty: difficulty,
-      formattedTime: "00:00",
       secondsElapsed: 0,
       hintsRemaining: sudokuGame.hintsCoordinates.length,
       maxHints: sudokuGame.hintsCoordinates.length,
-      solutionGrid:
-          List.generate(9, (i) => List.from(sudokuGame.solutionGrid[i])),
+      solutionGrid: List.generate(
+        9,
+        (i) => List.from(sudokuGame.solutionGrid[i]),
+      ),
       hintsCoordinates:
           sudokuGame.hintsCoordinates.map((c) => (c[0], c[1])).toList(),
     );
@@ -100,25 +95,7 @@ class SudokuGameModel {
   }
 
   SudokuGameModel useHint() {
-    if (hintsRemaining > 0 && selectedCell.$1 >= 0 && selectedCell.$2 >= 0) {
-      return SudokuGameModel(
-        board: board,
-        isOriginal: isOriginal,
-        isSelected: isSelected,
-        isHighlighted: isHighlighted,
-        isErrorCell: isErrorCell,
-        selectedCell: selectedCell,
-        difficulty: difficulty,
-        formattedTime: formattedTime,
-        secondsElapsed: secondsElapsed,
-        hintsRemaining: hintsRemaining - 1,
-        maxHints: maxHints,
-        hintsCoordinates: hintsCoordinates,
-        solutionGrid: solutionGrid,
-      );
-    }
-
-    return this;
+    return copy(hintsRemaining: hintsRemaining - 1);
   }
 
   SudokuGameModel selectCell((int, int) cell) {
