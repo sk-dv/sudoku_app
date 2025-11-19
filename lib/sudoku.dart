@@ -6,6 +6,7 @@ import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/menu_screen.dart';
 import 'package:sudoku_app/game_background.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/cubit/navigation_cubit.dart';
 
 import 'models/game_step.dart';
 import 'models/token_type.dart';
@@ -13,115 +14,131 @@ import 'widgets/pixelated_background.dart';
 import 'widgets/shadow_button.dart';
 import 'widgets/shadow_icon.dart';
 
-enum GameScreen {
-  menu,
-  game;
-
-  bool get isMenu => this == GameScreen.menu;
-}
-
 class Sudoku extends StatelessWidget {
   const Sudoku({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (_) => SudokuGameCubit()..setupStyle(context),
-      child: MaterialApp(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(create: (_) => SudokuGameCubit()..setupStyle(context)),
+        BlocProvider(create: (_) => NavigationCubit()),
+      ],
+      child: const MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: CloudsBackground(
-          builder: (context, state) {
-            if (state.screen.isMenu) return const MenuScreen();
-            return GameBackground(gameModel: state.game);
-          },
-        ),
+        home: ShellNavigation(),
       ),
     );
   }
 }
 
-class CloudsBackground extends StatelessWidget {
-  const CloudsBackground({super.key, required this.builder});
-
-  final Widget Function(BuildContext, SudokuGameState) builder;
-
-  String _formatTime(int seconds) {
-    final hours = seconds ~/ 3600;
-    final minutes = (seconds % 3600) ~/ 60;
-    final secs = seconds % 60;
-
-    if (hours > 0) {
-      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-    }
-    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
-  }
+class ShellNavigation extends StatelessWidget {
+  const ShellNavigation({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<SudokuGameCubit, SudokuGameState>(
-      builder: (context, state) {
-        return Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            backgroundColor: state.style.topBackground,
-            surfaceTintColor: Colors.transparent,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            shadowColor: Colors.transparent,
-            leadingWidth: state.screen.isMenu ? null : context.width * 0.45,
-            leading: state.screen.isMenu
-                ? null
-                : Container(
-                    margin: const EdgeInsets.only(left: 15),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        ShadowIcon(
-                          icon: state.step.icon,
-                          onPressed: context.read<SudokuGameCubit>().toggleGame,
-                        ),
-                        Container(
-                          margin: EdgeInsets.only(top: context.width * 0.02),
-                          child: Text(
-                            _formatTime(state.elapsedSeconds),
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold,
-                              color: state.style.selectedCell,
-                              fontFamily: 'Brick Sans',
-                              letterSpacing: 1,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+    return BlocBuilder<NavigationCubit, NavigationState>(
+      builder: (context, navState) {
+        return BlocBuilder<SudokuGameCubit, SudokuGameState>(
+          builder: (context, gameState) {
+            return Scaffold(
+              backgroundColor: Colors.transparent,
+              appBar: _AppBar(navState: navState, gameState: gameState),
+              body: Stack(
+                children: [
+                  PixelatedBackground(
+                    stop: gameState.step == GameStep.stop,
+                    primaryColor: gameState.style.topBackground,
+                    secondaryColor: gameState.style.bottomBackground,
+                    child: const SizedBox.expand(),
                   ),
-            actions: [
-              if (!state.screen.isMenu) ...[
-                Transform.translate(
-                  offset: const Offset(12, 0),
-                  child: _SymbolButton(),
-                ),
-              ],
-              ShadowIcon(
-                icon: state.style.themeIcon,
-                onPressed: context.read<SudokuGameCubit>().changeMode,
+                  _Content(navState: navState),
+                ],
               ),
-            ],
-          ),
-          body: PixelatedBackground(
-            stop: state.step == GameStep.stop,
-            primaryColor: state.style.topBackground,
-            secondaryColor: state.style.bottomBackground,
-            child: builder(context, state),
-          ),
+            );
+          },
         );
       },
     );
   }
 }
 
+class _Content extends StatelessWidget {
+  const _Content({required this.navState});
+
+  final NavigationState navState;
+
+  @override
+  Widget build(BuildContext context) {
+    if (navState.route.isMenu) return const MenuScreen();
+    return GameBackground(gameModel: navState.gameModel);
+  }
+}
+
+class _AppBar extends StatelessWidget implements PreferredSizeWidget {
+  const _AppBar({required this.navState, required this.gameState});
+
+  final NavigationState navState;
+  final SudokuGameState gameState;
+
+  @override
+  Size get preferredSize => const Size.fromHeight(kToolbarHeight);
+
+  @override
+  Widget build(BuildContext context) {
+    return AppBar(
+      backgroundColor: gameState.style.topBackground,
+      surfaceTintColor: Colors.transparent,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      shadowColor: Colors.transparent,
+      leadingWidth: navState.route.isGame ? context.width * 0.45 : null,
+      leading: navState.route.isGame
+          ? Container(
+              margin: const EdgeInsets.only(left: 15),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  ShadowIcon(
+                    icon: gameState.step.icon,
+                    onPressed: context.read<SudokuGameCubit>().toggleGame,
+                  ),
+                  Container(
+                    margin: EdgeInsets.only(top: context.width * 0.02),
+                    child: Text(
+                      gameState.timer,
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: gameState.style.selectedCell,
+                        fontFamily: 'Brick Sans',
+                        letterSpacing: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            )
+          : null,
+      actions: [
+        if (navState.route.isGame) ...[
+          Transform.translate(
+            offset: const Offset(12, 0),
+            child: _SymbolButton(),
+          ),
+        ],
+        ShadowIcon(
+          icon: gameState.style.themeIcon,
+          onPressed: context.read<SudokuGameCubit>().changeMode,
+        ),
+      ],
+    );
+  }
+}
+
 class _SymbolButton extends StatelessWidget {
+  const _SymbolButton();
+
   @override
   Widget build(BuildContext context) {
     return BlocBuilder<SudokuGameCubit, SudokuGameState>(

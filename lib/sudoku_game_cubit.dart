@@ -7,7 +7,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/models/style.dart';
 import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/screens/level_selection_screen.dart';
-import 'package:sudoku_app/sudoku.dart';
 import 'models/game_progress.dart';
 import 'models/game_step.dart';
 import 'models/token_type.dart';
@@ -17,7 +16,6 @@ class SudokuGameState extends Equatable {
   final GameStep step;
   final TokenType type;
   final SudokuStyle style;
-  final GameScreen screen;
   final int elapsedSeconds;
   final DifficultLevel difficulty;
   final SudokuGameModel? game;
@@ -26,11 +24,22 @@ class SudokuGameState extends Equatable {
     required this.step,
     required this.type,
     required this.style,
-    required this.screen,
     this.elapsedSeconds = 0,
     required this.difficulty,
     this.game,
   });
+
+  String get timer {
+    final hours = elapsedSeconds ~/ 3600;
+    final minutes = (elapsedSeconds % 3600) ~/ 60;
+    final secs = elapsedSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+    }
+
+    return '${minutes.toString().padLeft(2, '0')}:${secs.toString().padLeft(2, '0')}';
+  }
 
   factory SudokuGameState.empty() {
     return SudokuGameState(
@@ -38,7 +47,6 @@ class SudokuGameState extends Equatable {
       type: TokenType.number,
       style: SudokuLightStyle(),
       difficulty: DifficultLevel.medium,
-      screen: GameScreen.menu,
       game: null,
     );
   }
@@ -50,22 +58,21 @@ class SudokuGameState extends Equatable {
     int? elapsedSeconds,
     DifficultLevel? difficulty,
     SudokuGameModel? game,
-    GameScreen? screen,
+    bool? clearGame,
   }) {
     return SudokuGameState(
       step: step ?? this.step,
       type: type ?? this.type,
       style: style ?? this.style,
-      screen: screen ?? this.screen,
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       difficulty: difficulty ?? this.difficulty,
-      game: game ?? this.game,
+      game: clearGame == true ? null : (game ?? this.game),
     );
   }
 
   @override
   List<Object> get props {
-    return [step, type, style, screen, elapsedSeconds, difficulty];
+    return [step, type, style, elapsedSeconds, difficulty];
   }
 }
 
@@ -81,16 +88,18 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
 
   Future<void> loadSavedGame(String gameId) async {
     final progress = GameSaveService.loadGame(gameId);
-
     if (progress == null) return;
 
+    await GameSaveService.deleteSavedGame(gameId);
+
     emit(state.copy(
-      screen: GameScreen.game,
       step: GameStep.play,
       difficulty: progress.difficulty,
       game: progress.toSudokuGameModel(),
       elapsedSeconds: progress.timeElapsed,
     ));
+
+    _startTimer();
   }
 
   void setupStyle(BuildContext context) {
@@ -103,12 +112,11 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
 
   void toggleGame() {
     if (state.step == GameStep.play) {
-      // Pausar el temporizador
       _timer?.cancel();
     } else {
-      // Reanudar el temporizador
       _startTimer();
     }
+
     emit(state.copy(step: state.step.toggle));
   }
 
@@ -132,11 +140,11 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
 
   void play(DifficultLevel difficulty, [SudokuGameModel? game]) {
     emit(state.copy(
-      screen: GameScreen.game,
       elapsedSeconds: 0,
       step: GameStep.play,
       difficulty: difficulty,
       game: game,
+      clearGame: game == null,
     ));
 
     _startTimer();
@@ -144,7 +152,7 @@ class SudokuGameCubit extends Cubit<SudokuGameState> {
 
   void back() {
     _timer?.cancel();
-    emit(state.copy(elapsedSeconds: 0, screen: GameScreen.menu, game: null));
+    emit(state.copy(elapsedSeconds: 0, game: null));
   }
 
   void stopTimer() {

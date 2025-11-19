@@ -10,10 +10,8 @@ class SudokuGameModel {
   final List<List<bool>> isErrorCell;
   final (int, int) selectedCell;
   final DifficultLevel difficulty;
-  final int secondsElapsed;
   final bool isCompleted;
   final int hintsRemaining;
-  final int maxHints;
   final List<(int, int)> hintsCoordinates;
   final List<List<int>> solutionGrid;
 
@@ -25,10 +23,8 @@ class SudokuGameModel {
     required this.isErrorCell,
     required this.selectedCell,
     required this.difficulty,
-    required this.secondsElapsed,
     this.isCompleted = false,
     required this.hintsRemaining,
-    required this.maxHints,
     this.hintsCoordinates = const [],
     this.solutionGrid = const [],
   });
@@ -41,10 +37,8 @@ class SudokuGameModel {
     List<List<bool>>? isErrorCell,
     (int, int)? selectedCell,
     DifficultLevel? difficulty,
-    int? secondsElapsed,
     bool? isCompleted,
     int? hintsRemaining,
-    int? maxHints,
     List<(int, int)>? hintsCoordinates,
     List<List<int>>? solutionGrid,
   }) {
@@ -56,10 +50,8 @@ class SudokuGameModel {
       isErrorCell: isErrorCell ?? this.isErrorCell,
       selectedCell: selectedCell ?? this.selectedCell,
       difficulty: difficulty ?? this.difficulty,
-      secondsElapsed: secondsElapsed ?? this.secondsElapsed,
       isCompleted: isCompleted ?? this.isCompleted,
       hintsRemaining: hintsRemaining ?? this.hintsRemaining,
-      maxHints: maxHints ?? this.maxHints,
       hintsCoordinates: hintsCoordinates ?? this.hintsCoordinates,
       solutionGrid: solutionGrid ?? this.solutionGrid,
     );
@@ -80,9 +72,7 @@ class SudokuGameModel {
       isErrorCell: List.generate(9, (_) => List.generate(9, (_) => false)),
       selectedCell: (-1, -1),
       difficulty: difficulty,
-      secondsElapsed: 0,
       hintsRemaining: sudokuGame.hintsCoordinates.length,
-      maxHints: sudokuGame.hintsCoordinates.length,
       solutionGrid: List.generate(
         9,
         (i) => List.from(sudokuGame.solutionGrid[i]),

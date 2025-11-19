@@ -26,7 +26,7 @@ class UseHintCommand extends GameCommand {
 
     // Decrementar hints disponibles
     final newHintsRemaining =
-        (board.hintsRemaining - 1).clamp(0, board.maxHints);
+        (board.hintsRemaining - 1).clamp(0, board.hintsCoordinates.length);
 
     final updatedModel = board.copy(
       board: newBoard,

@@ -4,6 +4,7 @@ import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/services/game_save_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/cubit/navigation_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/text_shadow.dart';
 
@@ -53,9 +54,16 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
     }
   }
 
-  void _continueSavedGame(BuildContext context, String gameId) {
-    context.read<SudokuGameCubit>().loadSavedGame(gameId);
-    // context.read<SudokuGameCubit>().play();
+  void _continueSavedGame(BuildContext context, String gameId) async {
+    final cubit = context.read<SudokuGameCubit>();
+    await cubit.loadSavedGame(gameId);
+
+    if (context.mounted) {
+      context.read<NavigationCubit>().goToGame(
+        cubit.state.difficulty,
+        cubit.state.game,
+      );
+    }
   }
 
   void _discardSavedGame() {
@@ -148,7 +156,10 @@ class _LevelCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () => context.read<SudokuGameCubit>().play(difficulty),
+      onTap: () {
+        context.read<SudokuGameCubit>().play(difficulty);
+        context.read<NavigationCubit>().goToGame(difficulty);
+      },
       child: FloatingCard(
         elevation: 6,
         padding: const EdgeInsets.all(10),
@@ -361,14 +372,16 @@ class _ContinueGameCard extends StatelessWidget {
                 children: [
                   Icon(Icons.history_rounded, color: color, size: 24),
                   const SizedBox(width: 12),
-                  Text(
-                    'CONTINUAR JUEGO',
-                    style: TextStyle(
-                      fontSize: 16,
-                      color: color,
-                      fontFamily: 'Brick Sans',
-                      letterSpacing: 2,
-                      fontWeight: FontWeight.bold,
+                  Expanded(
+                    child: Text(
+                      'CONTINUAR JUEGO',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: color,
+                        fontFamily: 'Brick Sans',
+                        letterSpacing: 2,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ),
                 ],
@@ -376,7 +389,7 @@ class _ContinueGameCard extends StatelessWidget {
               const SizedBox(height: 12),
               if (savedGame != null) ...[
                 Text(
-                  'Dificultad: ${savedGame.difficulty.name.toUpperCase()}',
+                  'Dificultad: ${savedGame.difficulty.level}',
                   style: TextStyle(
                     fontSize: 12,
                     color: color.withValues(alpha: 0.7),
@@ -385,7 +398,7 @@ class _ContinueGameCard extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 Text(
-                  'Pistas: ${savedGame.hintIdx}',
+                  'Pistas: ${savedGame.hintCoordinates.length - savedGame.hintIdx}',
                   style: TextStyle(
                     fontSize: 12,
                     color: color.withValues(alpha: 0.7),

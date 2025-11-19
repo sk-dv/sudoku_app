@@ -84,11 +84,10 @@ class GameBackground extends StatelessWidget {
                 listener: (context, state) {
                   if (state.gameModel.isCompleted) {
                     context.read<SudokuGameCubit>().stopTimer();
-                    showModalBottomSheet(
+                    showDialog(
                       context: context,
-                      isDismissible: false,
-                      enableDrag: false,
-                      builder: (context) => const VictoryModal(),
+                      barrierDismissible: false,
+                      builder: (context) => const VictoryDialog(),
                     );
                   }
                 },

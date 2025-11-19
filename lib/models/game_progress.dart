@@ -68,7 +68,7 @@ class GameProgress {
       id: const Uuid().v4(),
       board: game.model.board,
       hintIdx: game.idx,
-      timeElapsed: game.model.secondsElapsed,
+      timeElapsed: game.elapsedSeconds,
       difficulty: game.model.difficulty,
       gameSource: game.source,
       savedAt: DateTime.now(),
@@ -78,7 +78,6 @@ class GameProgress {
   }
 
   SudokuGameModel toSudokuGameModel() {
-    print(timeElapsed);
     return SudokuGameModel(
       board: board,
       isOriginal: List.generate(
@@ -90,8 +89,6 @@ class GameProgress {
       isErrorCell: List.generate(9, (_) => List.generate(9, (_) => false)),
       selectedCell: (-1, -1),
       difficulty: difficulty,
-      secondsElapsed: timeElapsed,
-      maxHints: hintCoordinates.length,
       solutionGrid: solutionGrid,
       hintsRemaining: hintCoordinates.length - hintIdx,
       hintsCoordinates: hintCoordinates,

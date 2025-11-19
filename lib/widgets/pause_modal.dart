@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/cubit/navigation_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/shadow_button.dart';
 
@@ -80,11 +81,12 @@ class PauseDialog extends StatelessWidget {
                         ),
                         const SizedBox(height: 10),
                         GestureDetector(
-                          onTap: () async {
+                          onTap: () {
+                            final nav = context.read<NavigationCubit>();
                             Navigator.of(context).pop();
-                            await Future.delayed(
-                              const Duration(milliseconds: 500),
-                              context.read<SudokuGameCubit>().back,
+                            Future.delayed(
+                              const Duration(milliseconds: 300),
+                              nav.goToMenu,
                             );
                           },
                           child: Container(

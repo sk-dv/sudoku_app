@@ -57,7 +57,8 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
       cell: coord,
       revealedValue: revealedValue,
       previousValue: previousValue == 0 ? null : previousValue,
-      hintIndex: currentModel.maxHints - currentModel.hintsRemaining,
+      hintIndex:
+          currentModel.hintsCoordinates.length - currentModel.hintsRemaining,
       boardProgressPercentage: boardProgress,
     );
 

@@ -45,7 +45,10 @@ class SudokuGameScreen extends StatelessWidget {
                               model: state.gameModel,
                               idx: state.idx,
                               source: GameSource.level,
-                              elapsedSeconds: elapsedSeconds,
+                              elapsedSeconds: context
+                                  .read<SudokuGameCubit>()
+                                  .state
+                                  .elapsedSeconds,
                             ));
                         if (context.mounted) {
                           showCustomToast(

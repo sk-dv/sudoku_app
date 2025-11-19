@@ -5,6 +5,7 @@ import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/screens/level_selection_screen.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/cubit/navigation_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/text_shadow.dart';
 
@@ -194,6 +195,10 @@ class _DailyDifficultyCard extends StatelessWidget {
               );
 
               cubit.play(difficulty, gameModel);
+
+              if (context.mounted) {
+                context.read<NavigationCubit>().goToGame(difficulty, gameModel);
+              }
             },
       child: Opacity(
         opacity: isDisabled ? 0.4 : 1.0,
