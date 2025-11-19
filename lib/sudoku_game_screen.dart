@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import 'package:sudoku_app/cubit/sudoku_board_cubit.dart';
+import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
 import 'package:sudoku_app/models/game_progress.dart';
-import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/widgets/keyboard_mode.dart';
 import 'package:sudoku_app/widgets/sudoku_board.dart';
 import 'package:sudoku_app/widgets/game_controls.dart';
@@ -15,11 +15,9 @@ class SudokuGameScreen extends StatelessWidget {
   const SudokuGameScreen({
     super.key,
     required this.type,
-    required this.elapsedSeconds,
   });
 
   final TokenType type;
-  final int elapsedSeconds;
 
   @override
   Widget build(BuildContext context) {
@@ -39,17 +37,10 @@ class SudokuGameScreen extends StatelessWidget {
                   builder: (context, state) {
                     return GameControls(
                       onSave: () async {
-                        await context
-                            .read<SudokuGameCubit>()
-                            .saveGameProgress(SavedGame(
-                              model: state.gameModel,
-                              idx: state.idx,
-                              source: GameSource.level,
-                              elapsedSeconds: context
-                                  .read<SudokuGameCubit>()
-                                  .state
-                                  .elapsedSeconds,
-                            ));
+                        await context.read<GameCoordinatorCubit>().saveGame(
+                              state.gameModel,
+                              GameSource.level,
+                            );
                         if (context.mounted) {
                           showCustomToast(
                             context,

@@ -20,7 +20,7 @@ class SudokuGameModel {
   final DifficultLevel difficulty;       // Nivel de dificultad del juego
   final String formattedTime;            // Tiempo formateado (MM:SS)
   final int secondsElapsed;              // Segundos transcurridos
-  
+
   // Constructor que exige todos los campos
   const SudokuGameModel({
     required this.board,
@@ -33,6 +33,7 @@ class SudokuGameModel {
 ## Principio de inmutabilidad
 
 El modelo es completamente inmutable:
+
 - Todos los campos son `final`
 - No hay métodos que modifiquen el estado interno
 - Cada operación devuelve un nuevo modelo con los cambios aplicados
@@ -63,6 +64,7 @@ SudokuGameModel selectCell(int row, int col) {
 ```
 
 Cuando el usuario selecciona una celda, este método:
+
 1. Crea una nueva matriz `isSelected` con todas las celdas desmarcadas
 2. Marca la celda seleccionada (row, col) como seleccionada
 3. Crea una nueva matriz `isHighlighted` para resaltar fila, columna y subcuadrícula
@@ -81,6 +83,7 @@ SudokuGameModel enterNumber(int number) {
 ```
 
 Cuando el usuario ingresa un número:
+
 1. Se verifica que haya una celda seleccionada y que no sea original
 2. Se crea una copia del tablero
 3. Se actualiza el número en la celda seleccionada
@@ -117,17 +120,20 @@ Este método marca las celdas que contienen errores (números duplicados en la m
 
 ## Flujo de trabajo
 
-1. **Inicialización**: 
+1. **Inicialización**:
+
    ```dart
    final gameModel = SudokuGameModel.initialize();
    ```
 
 2. **Seleccionar una celda**:
+
    ```dart
    final updatedModel = gameModel.selectCell(3, 4);
    ```
 
 3. **Ingresar un número**:
+
    ```dart
    final newerModel = updatedModel.enterNumber(5);
    ```
@@ -140,11 +146,13 @@ Este método marca las celdas que contienen errores (números duplicados en la m
 ## Cómo extender el modelo
 
 ### Agregar un nuevo campo
+
 1. Añade el campo como `final` en la clase
 2. Actualiza el constructor principal
 3. Actualiza todos los métodos que devuelven un nuevo modelo para incluir el nuevo campo
 
 ### Agregar una nueva funcionalidad
+
 1. Crea un nuevo método que retorne un `SudokuGameModel`
 2. Implementa la lógica para crear nuevas estructuras de datos según sea necesario
 3. Retorna un nuevo modelo con los cambios aplicados
@@ -152,6 +160,7 @@ Este método marca las celdas que contienen errores (números duplicados en la m
 ### Ejemplos de extensiones posibles
 
 #### Añadir un sistema de pistas
+
 ```dart
 SudokuGameModel getHint() {
   // Encuentra una celda vacía
@@ -162,6 +171,7 @@ SudokuGameModel getHint() {
 ```
 
 #### Añadir sistema de notas
+
 ```dart
 // Añadir un nuevo campo
 final List<List<Set<int>>> notes;
@@ -175,9 +185,45 @@ SudokuGameModel toggleNote(int number) {
 ```
 
 ## Mejores prácticas
+
 1. **Nunca modifiques directamente** las estructuras de datos del modelo
 2. **Siempre crea nuevas copias** de las matrices cuando necesites modificarlas
 3. **Mantén los métodos puros** sin efectos secundarios
 4. **Actualiza el modelo** a través de los métodos existentes, no crees nuevas instancias manualmente
 
-Siguiendo estos principios, tu juego de Sudoku será más fácil de mantener y extender en el futuro.
+Contexto de continuación
+
+Proyecto: App de Sudoku en Flutter con arquitectura refactorizada para reducir acoplamiento.
+
+Instrucciones de trabajo: Sé sucinto, preciso, simple, elegante y legible en todas las respuestas.
+
+Arquitectura actual:
+Servicios:
+├─ TimerService - Timer independiente con Stream
+└─ GameSaveService - Persistencia con Hive
+
+Cubits:
+├─ NavigationCubit - Navegación menu/game
+├─ GameCoordinatorCubit - Orquesta timer + guardado + hints
+├─ SudokuGameCubit - Solo tema/símbolos/pausa
+└─ SudokuBoardCubit - Tablero + comandos (undo/redo)
+
+UI:
+└─ Shell Navigation - Background persistente con nubes animadas
+
+Último commit: feat: decouple timer logic into dedicated service
+
+Completado:
+
+- ✓ Navegación con background persistente
+- ✓ Timer desacoplado en GameCoordinator
+- ✓ Guardado único (sobrescribe anterior)
+- ✓ Pistas sincronizadas con GameCoordinator
+
+Pendiente/Próximo:
+
+1. Probar flujo completo (timer, guardado, pistas)
+2. Opcional: Refactorizar SudokuBoardCubit.idx (duplicado con GameCoordinator)
+3. Opcional: Limpiar código legacy si existe
+
+Problemas conocidos: Ninguno reportado después del último fix.

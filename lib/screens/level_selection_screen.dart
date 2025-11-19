@@ -5,6 +5,7 @@ import 'package:sudoku_app/services/game_save_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/navigation_cubit.dart';
+import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/text_shadow.dart';
 
@@ -55,13 +56,22 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
   }
 
   void _continueSavedGame(BuildContext context, String gameId) async {
-    final cubit = context.read<SudokuGameCubit>();
-    await cubit.loadSavedGame(gameId);
+    final progress = GameSaveService.loadGame(gameId);
+    if (progress == null) return;
 
     if (context.mounted) {
+      context.read<SudokuGameCubit>().play(
+        progress.difficulty,
+        progress.toSudokuGameModel(),
+      );
+      context.read<GameCoordinatorCubit>().resumeGame(
+        progress.timeElapsed,
+        progress.difficulty,
+        progress.hintIdx,
+      );
       context.read<NavigationCubit>().goToGame(
-        cubit.state.difficulty,
-        cubit.state.game,
+        progress.difficulty,
+        progress.toSudokuGameModel(),
       );
     }
   }
@@ -158,6 +168,7 @@ class _LevelCard extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         context.read<SudokuGameCubit>().play(difficulty);
+        context.read<GameCoordinatorCubit>().startGame(difficulty);
         context.read<NavigationCubit>().goToGame(difficulty);
       },
       child: FloatingCard(

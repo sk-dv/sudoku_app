@@ -1,5 +1,4 @@
 import 'package:sudoku_app/screens/level_selection_screen.dart';
-import 'package:uuid/uuid.dart';
 
 import 'sudoku_game_model.dart';
 
@@ -65,7 +64,7 @@ class GameProgress {
 
   factory GameProgress.fromGameModel(SavedGame game) {
     return GameProgress(
-      id: const Uuid().v4(),
+      id: 'current_game',
       board: game.model.board,
       hintIdx: game.idx,
       timeElapsed: game.elapsedSeconds,

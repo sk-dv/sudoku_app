@@ -7,6 +7,7 @@ import 'package:sudoku_app/menu_screen.dart';
 import 'package:sudoku_app/game_background.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/navigation_cubit.dart';
+import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
 
 import 'models/game_step.dart';
 import 'models/token_type.dart';
@@ -23,6 +24,7 @@ class Sudoku extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => SudokuGameCubit()..setupStyle(context)),
         BlocProvider(create: (_) => NavigationCubit()),
+        BlocProvider(create: (_) => GameCoordinatorCubit()),
       ],
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -41,20 +43,28 @@ class ShellNavigation extends StatelessWidget {
       builder: (context, navState) {
         return BlocBuilder<SudokuGameCubit, SudokuGameState>(
           builder: (context, gameState) {
-            return Scaffold(
-              backgroundColor: Colors.transparent,
-              appBar: _AppBar(navState: navState, gameState: gameState),
-              body: Stack(
-                children: [
-                  PixelatedBackground(
-                    stop: gameState.step == GameStep.stop,
-                    primaryColor: gameState.style.topBackground,
-                    secondaryColor: gameState.style.bottomBackground,
-                    child: const SizedBox.expand(),
+            return BlocBuilder<GameCoordinatorCubit, GameCoordinatorState>(
+              builder: (context, coordState) {
+                return Scaffold(
+                  backgroundColor: Colors.transparent,
+                  appBar: _AppBar(
+                    navState: navState,
+                    gameState: gameState,
+                    coordState: coordState,
                   ),
-                  _Content(navState: navState),
-                ],
-              ),
+                  body: Stack(
+                    children: [
+                      PixelatedBackground(
+                        stop: gameState.step == GameStep.stop,
+                        primaryColor: gameState.style.topBackground,
+                        secondaryColor: gameState.style.bottomBackground,
+                        child: const SizedBox.expand(),
+                      ),
+                      _Content(navState: navState),
+                    ],
+                  ),
+                );
+              },
             );
           },
         );
@@ -76,10 +86,15 @@ class _Content extends StatelessWidget {
 }
 
 class _AppBar extends StatelessWidget implements PreferredSizeWidget {
-  const _AppBar({required this.navState, required this.gameState});
+  const _AppBar({
+    required this.navState,
+    required this.gameState,
+    required this.coordState,
+  });
 
   final NavigationState navState;
   final SudokuGameState gameState;
+  final GameCoordinatorState coordState;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -101,12 +116,22 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
                 children: [
                   ShadowIcon(
                     icon: gameState.step.icon,
-                    onPressed: context.read<SudokuGameCubit>().toggleGame,
+                    onPressed: () {
+                      final cubit = context.read<SudokuGameCubit>();
+                      final coordinator = context.read<GameCoordinatorCubit>();
+
+                      if (gameState.step == GameStep.play) {
+                        coordinator.pauseGame();
+                      } else {
+                        coordinator.resumeTimer();
+                      }
+                      cubit.toggleGame();
+                    },
                   ),
                   Container(
                     margin: EdgeInsets.only(top: context.width * 0.02),
                     child: Text(
-                      gameState.timer,
+                      coordState.formattedTime,
                       style: TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
@@ -124,7 +149,7 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
         if (navState.route.isGame) ...[
           Transform.translate(
             offset: const Offset(12, 0),
-            child: _SymbolButton(),
+            child: const _SymbolButton(),
           ),
         ],
         ShadowIcon(

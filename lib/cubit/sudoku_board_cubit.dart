@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/services/game_command_manager.dart';
+import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
 
 class SudokuBoardState extends Equatable {
   final SudokuGameModel gameModel;
@@ -36,8 +37,9 @@ class SudokuBoardState extends Equatable {
 
 class SudokuBoardCubit extends Cubit<SudokuBoardState> {
   final GameCommandManager _commandManager = GameCommandManager();
+  final GameCoordinatorCubit? _coordinator;
 
-  SudokuBoardCubit(SudokuGameModel gameModel)
+  SudokuBoardCubit(SudokuGameModel gameModel, [this._coordinator])
       : super(SudokuBoardState(gameModel: gameModel));
 
   void useHint() {
@@ -66,6 +68,8 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
       gameModel: _commandManager.executeCommand(hintCommand, currentModel),
       idx: state.idx + 1,
     ));
+
+    _coordinator?.incrementHintIndex();
   }
 
   void undoLastMove() {
