@@ -7,6 +7,7 @@ import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/widgets/keyboard_mode.dart';
 import 'package:sudoku_app/widgets/sudoku_board.dart';
 import 'package:sudoku_app/widgets/game_controls.dart';
+import 'package:sudoku_app/widgets/custom_toast.dart';
 
 import 'models/token_type.dart';
 
@@ -37,14 +38,23 @@ class SudokuGameScreen extends StatelessWidget {
                 BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
                   builder: (context, state) {
                     return GameControls(
-                      onSave: () async => context
-                          .read<SudokuGameCubit>()
-                          .saveGameProgress(SavedGame(
-                            model: state.gameModel,
-                            idx: state.idx,
-                            source: GameSource.level,
-                            elapsedSeconds: elapsedSeconds,
-                          )),
+                      onSave: () async {
+                        await context
+                            .read<SudokuGameCubit>()
+                            .saveGameProgress(SavedGame(
+                              model: state.gameModel,
+                              idx: state.idx,
+                              source: GameSource.level,
+                              elapsedSeconds: elapsedSeconds,
+                            ));
+                        if (context.mounted) {
+                          showCustomToast(
+                            context,
+                            'GUARDADO',
+                            icon: Icons.check_circle_rounded,
+                          );
+                        }
+                      },
                       onHints: context.read<SudokuBoardCubit>().useHint,
                       hintsCount: state.gameModel.hintsRemaining,
                     );
