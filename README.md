@@ -157,33 +157,6 @@ Este método marca las celdas que contienen errores (números duplicados en la m
 2. Implementa la lógica para crear nuevas estructuras de datos según sea necesario
 3. Retorna un nuevo modelo con los cambios aplicados
 
-### Ejemplos de extensiones posibles
-
-#### Añadir un sistema de pistas
-
-```dart
-SudokuGameModel getHint() {
-  // Encuentra una celda vacía
-  // Determina el valor correcto
-  // Crea una nueva matriz del tablero con la pista añadida
-  // Devuelve un nuevo modelo
-}
-```
-
-#### Añadir sistema de notas
-
-```dart
-// Añadir un nuevo campo
-final List<List<Set<int>>> notes;
-
-// Nuevo método para gestionar notas
-SudokuGameModel toggleNote(int number) {
-  // Crea una nueva matriz de notas
-  // Añade/elimina el número de las notas de la celda seleccionada
-  // Devuelve un nuevo modelo
-}
-```
-
 ## Mejores prácticas
 
 1. **Nunca modifiques directamente** las estructuras de datos del modelo

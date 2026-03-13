@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sudoku_app/cubit/auth_cubit.dart';
 import 'package:sudoku_app/models/context_utils.dart';
+import 'package:sudoku_app/screens/login_screen.dart';
+import 'package:sudoku_app/services/auth_service.dart';
 
 import 'package:sudoku_app/menu_screen.dart';
 import 'package:sudoku_app/game_background.dart';
@@ -25,6 +28,7 @@ class Sudoku extends StatelessWidget {
         BlocProvider(create: (_) => SudokuGameCubit()..setupStyle(context)),
         BlocProvider(create: (_) => NavigationCubit()),
         BlocProvider(create: (_) => GameCoordinatorCubit()),
+        BlocProvider(create: (_) => AuthCubit(AuthService.instance)),
       ],
       child: const MaterialApp(
         debugShowCheckedModeBanner: false,
@@ -39,30 +43,43 @@ class ShellNavigation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<NavigationCubit, NavigationState>(
-      builder: (context, navState) {
-        return BlocBuilder<SudokuGameCubit, SudokuGameState>(
-          builder: (context, gameState) {
-            return BlocBuilder<GameCoordinatorCubit, GameCoordinatorState>(
-              builder: (context, coordState) {
-                return Scaffold(
-                  backgroundColor: Colors.transparent,
-                  appBar: _AppBar(
-                    navState: navState,
-                    gameState: gameState,
-                    coordState: coordState,
-                  ),
-                  body: Stack(
-                    children: [
-                      PixelatedBackground(
-                        stop: gameState.step == GameStep.stop,
-                        primaryColor: gameState.style.topBackground,
-                        secondaryColor: gameState.style.bottomBackground,
-                        child: const SizedBox.expand(),
+    return BlocBuilder<AuthCubit, AuthState>(
+      builder: (context, authState) {
+        // Muestra pantalla de login si no hay sesión activa
+        if (authState is AuthInitial ||
+            authState is AuthLoading ||
+            authState is AuthError) {
+          return const LoginScreen();
+        }
+
+        // Usuario autenticado (con Google o como guest) → shell del juego
+        return BlocBuilder<NavigationCubit, NavigationState>(
+          builder: (context, navState) {
+            return BlocBuilder<SudokuGameCubit, SudokuGameState>(
+              builder: (context, gameState) {
+                return BlocBuilder<GameCoordinatorCubit, GameCoordinatorState>(
+                  builder: (context, coordState) {
+                    return Scaffold(
+                      backgroundColor: Colors.transparent,
+                      appBar: _AppBar(
+                        navState: navState,
+                        gameState: gameState,
+                        coordState: coordState,
+                        authState: authState,
                       ),
-                      _Content(navState: navState),
-                    ],
-                  ),
+                      body: Stack(
+                        children: [
+                          PixelatedBackground(
+                            stop: gameState.step == GameStep.stop,
+                            primaryColor: gameState.style.topBackground,
+                            secondaryColor: gameState.style.bottomBackground,
+                            child: const SizedBox.expand(),
+                          ),
+                          _Content(navState: navState),
+                        ],
+                      ),
+                    );
+                  },
                 );
               },
             );
@@ -90,11 +107,13 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
     required this.navState,
     required this.gameState,
     required this.coordState,
+    required this.authState,
   });
 
   final NavigationState navState;
   final SudokuGameState gameState;
   final GameCoordinatorState coordState;
+  final AuthState authState;
 
   @override
   Size get preferredSize => const Size.fromHeight(kToolbarHeight);
@@ -152,11 +171,139 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
             child: const _SymbolButton(),
           ),
         ],
+        if (navState.route.isMenu) _UserAvatar(authState: authState),
         ShadowIcon(
           icon: gameState.style.themeIcon,
           onPressed: context.read<SudokuGameCubit>().changeMode,
         ),
       ],
+    );
+  }
+}
+
+/// Muestra el avatar del usuario o ícono de guest en el menú.
+class _UserAvatar extends StatelessWidget {
+  const _UserAvatar({required this.authState});
+  final AuthState authState;
+
+  @override
+  Widget build(BuildContext context) {
+    if (authState is AuthAuthenticated) {
+      final user = (authState as AuthAuthenticated);
+      return GestureDetector(
+        onTap: () => _showAccountDialog(context, user),
+        child: Container(
+          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+          child: CircleAvatar(
+            radius: 16,
+            backgroundColor: const Color(0xFFFFC759),
+            backgroundImage: user.photoUrl != null
+                ? NetworkImage(user.photoUrl!)
+                : null,
+            child: user.photoUrl == null
+                ? Text(
+                    user.displayName.isNotEmpty
+                        ? user.displayName[0].toUpperCase()
+                        : '?',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D2D2D),
+                    ),
+                  )
+                : null,
+          ),
+        ),
+      );
+    }
+
+    // Guest
+    return GestureDetector(
+      onTap: () => _showGuestDialog(context),
+      child: Container(
+        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
+        child: const CircleAvatar(
+          radius: 16,
+          backgroundColor: Color(0xFF6B6B8A),
+          child: Icon(Icons.person_outline, size: 18, color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  void _showAccountDialog(BuildContext context, AuthAuthenticated user) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: Text(
+          user.displayName,
+          style: const TextStyle(fontFamily: 'Brick Sans'),
+        ),
+        content: Text(
+          user.email,
+          style: const TextStyle(fontFamily: 'Brick Sans', fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AuthCubit>().signOut();
+            },
+            child: const Text(
+              'Cerrar sesión',
+              style: TextStyle(
+                fontFamily: 'Brick Sans',
+                color: Color(0xFFFF5E5B),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Cancelar',
+              style: TextStyle(fontFamily: 'Brick Sans'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showGuestDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text(
+          'Modo invitado',
+          style: TextStyle(fontFamily: 'Brick Sans'),
+        ),
+        content: const Text(
+          'Inicia sesión con Google para guardar tu progreso en la nube y ver tus estadísticas.',
+          style: TextStyle(fontFamily: 'Brick Sans', fontSize: 13),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.pop(context);
+              context.read<AuthCubit>().goToLogin();
+            },
+            child: const Text(
+              'Iniciar sesión',
+              style: TextStyle(
+                fontFamily: 'Brick Sans',
+                color: Color(0xFF4A90E2),
+              ),
+            ),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text(
+              'Seguir como invitado',
+              style: TextStyle(fontFamily: 'Brick Sans'),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

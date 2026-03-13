@@ -8,31 +8,27 @@ class SudokuBoardState extends Equatable {
   final SudokuGameModel gameModel;
   final bool isLoading;
   final String error;
-  final int idx;
 
   const SudokuBoardState({
     required this.gameModel,
     this.isLoading = false,
     this.error = '',
-    this.idx = 0,
   });
 
   SudokuBoardState copyWith({
     SudokuGameModel? gameModel,
     bool? isLoading,
     String? error,
-    int? idx,
   }) {
     return SudokuBoardState(
       gameModel: gameModel ?? this.gameModel,
       isLoading: isLoading ?? this.isLoading,
       error: error ?? this.error,
-      idx: idx ?? this.idx,
     );
   }
 
   @override
-  List<Object?> get props => [gameModel, isLoading, error, idx];
+  List<Object?> get props => [gameModel, isLoading, error];
 }
 
 class SudokuBoardCubit extends Cubit<SudokuBoardState> {
@@ -50,7 +46,8 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
       return;
     }
 
-    final coord = currentModel.hintsCoordinates[state.idx];
+    final hintIdx = _coordinator?.state.hintIndex ?? 0;
+    final coord = currentModel.hintsCoordinates[hintIdx];
     final revealedValue = currentModel.solutionGrid[coord.$1][coord.$2];
     final boardProgress = _commandManager.calculateBoardProgress(currentModel);
     final previousValue = currentModel.valueAt(coord);
@@ -66,7 +63,6 @@ class SudokuBoardCubit extends Cubit<SudokuBoardState> {
 
     emit(state.copyWith(
       gameModel: _commandManager.executeCommand(hintCommand, currentModel),
-      idx: state.idx + 1,
     ));
 
     _coordinator?.incrementHintIndex();

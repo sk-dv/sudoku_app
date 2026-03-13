@@ -8,6 +8,7 @@ import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'models/sudoku_game_model.dart';
 import 'screens/level_selection_screen.dart';
 import 'services/sudoku_api_service.dart';
+import 'services/game_save_service.dart';
 import 'sudoku_game_screen.dart';
 import 'widgets/pause_modal.dart';
 import 'widgets/victory_modal.dart';
@@ -88,6 +89,7 @@ class GameBackground extends StatelessWidget {
                 listener: (context, state) {
                   if (state.gameModel.isCompleted) {
                     context.read<GameCoordinatorCubit>().pauseGame();
+                    GameSaveService.deleteAllSavedGames();
                     showDialog(
                       context: context,
                       barrierDismissible: false,
