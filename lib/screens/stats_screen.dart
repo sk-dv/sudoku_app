@@ -79,48 +79,52 @@ class _StatsScreenState extends State<StatsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
                         FloatingCard(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.public_rounded,
-                                    color: context
-                                        .read<SudokuGameCubit>()
-                                        .state
-                                        .style
-                                        .selectedCell,
-                                    size: 28,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  BlocSelector<SudokuGameCubit, SudokuGameState,
-                                      Color>(
-                                    selector: (state) =>
-                                        state.style.borderColor,
-                                    builder: (context, color) {
-                                      return Text(
-                                        'GLOBAL',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: color,
-                                          fontFamily: 'Brick Sans',
-                                          letterSpacing: 2,
-                                          fontWeight: FontWeight.bold,
+                          padding: const EdgeInsets.all(20),
+                          child: BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
+                            selector: (state) => state.style.selectedCell,
+                            builder: (context, accentColor) {
+                              return BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
+                                selector: (state) => state.style.borderColor,
+                                builder: (context, textColor) {
+                                  return Row(
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Text(
+                                              'TOTAL PUZZLES',
+                                              style: TextStyle(
+                                                fontSize: 11,
+                                                color: textColor.withValues(alpha: 0.5),
+                                                fontFamily: 'Brick Sans',
+                                                letterSpacing: 2,
+                                              ),
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              '${_stats?['total_puzzles'] ?? 0}',
+                                              style: TextStyle(
+                                                fontSize: 48,
+                                                color: accentColor,
+                                                fontFamily: 'Brick Sans',
+                                                fontWeight: FontWeight.bold,
+                                                letterSpacing: 2,
+                                                height: 1,
+                                              ),
+                                            ),
+                                          ],
                                         ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 20),
-                              _StatItem(
-                                label: 'Total de Puzzles',
-                                value: '${_stats?['total_puzzles'] ?? 0}',
-                                icon: Icons.grid_on_rounded,
-                                color: const Color(0xFF4CAF50),
-                              ),
-                            ],
+                                      ),
+                                      Icon(Icons.grid_on_rounded,
+                                          color: accentColor.withValues(alpha: 0.2),
+                                          size: 48),
+                                    ],
+                                  );
+                                },
+                              );
+                            },
                           ),
                         ),
                         const SizedBox(height: 20),
@@ -128,72 +132,68 @@ class _StatsScreenState extends State<StatsScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Icon(
-                                    Icons.bar_chart_rounded,
-                                    color: context
-                                        .read<SudokuGameCubit>()
-                                        .state
-                                        .style
-                                        .selectedCell,
-                                    size: 28,
-                                  ),
-                                  const SizedBox(width: 12),
-                                  BlocSelector<SudokuGameCubit, SudokuGameState,
-                                      Color>(
-                                    selector: (state) {
-                                      return state.style.borderColor;
-                                    },
-                                    builder: (context, color) {
-                                      return Text(
-                                        'POR DIFICULTAD',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          color: color,
-                                          fontFamily: 'Brick Sans',
-                                          letterSpacing: 2,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
+                              BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
+                                selector: (state) => state.style.borderColor,
+                                builder: (context, color) {
+                                  return Text(
+                                    'POR DIFICULTAD',
+                                    style: TextStyle(
+                                      fontSize: 13,
+                                      color: color.withValues(alpha: 0.6),
+                                      fontFamily: 'Brick Sans',
+                                      letterSpacing: 2,
+                                    ),
+                                  );
+                                },
                               ),
-                              const SizedBox(height: 15),
+                              const SizedBox(height: 16),
+                              _DifficultyBar(
+                                label: 'PRINCIPIANTE',
+                                count: _boardsSummary?['BEGINNER'] ?? 0,
+                                total: _stats?['total_puzzles'] ?? 1,
+                                color: const Color(0xFF8BC34A),
+                              ),
+                              const SizedBox(height: 10),
                               _DifficultyBar(
                                 label: 'FÁCIL',
-                                count: _boardsSummary?['VERY_EASY'] ?? 0,
+                                count: _boardsSummary?['EASY'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFF4CAF50),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 10),
                               _DifficultyBar(
                                 label: 'MEDIO',
-                                count: _boardsSummary?['EASY'] ?? 0,
+                                count: _boardsSummary?['MEDIUM'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFF2196F3),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 10),
                               _DifficultyBar(
                                 label: 'DIFÍCIL',
                                 count: _boardsSummary?['HARD'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFFFFC107),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 10),
                               _DifficultyBar(
                                 label: 'EXPERTO',
-                                count: _boardsSummary?['VERY_HARD'] ?? 0,
+                                count: _boardsSummary?['EXPERT'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFFFF9800),
                               ),
-                              const SizedBox(height: 12),
+                              const SizedBox(height: 10),
                               _DifficultyBar(
                                 label: 'MAESTRO',
                                 count: _boardsSummary?['MASTER'] ?? 0,
                                 total: _stats?['total_puzzles'] ?? 1,
                                 color: const Color(0xFFF44336),
+                              ),
+                              const SizedBox(height: 10),
+                              _DifficultyBar(
+                                label: 'GRAN MAESTRO',
+                                count: _boardsSummary?['GRANDMASTER'] ?? 0,
+                                total: _stats?['total_puzzles'] ?? 1,
+                                color: const Color(0xFF9C27B0),
                               ),
                             ],
                           ),
@@ -239,70 +239,6 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.label,
-    required this.value,
-    required this.icon,
-    required this.color,
-  });
-
-  final String label;
-  final String value;
-  final IconData icon;
-  final Color color;
-
-  @override
-  Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(color: color, width: 2),
-          ),
-          child: Icon(icon, color: color, size: 24),
-        ),
-        const SizedBox(width: 16),
-        Expanded(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
-                selector: (state) => state.style.borderColor,
-                builder: (context, textColor) {
-                  return Text(
-                    label,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: textColor.withValues(alpha: 0.7),
-                      fontFamily: 'Brick Sans',
-                      letterSpacing: 1,
-                    ),
-                  );
-                },
-              ),
-              const SizedBox(height: 4),
-              Text(
-                value,
-                style: TextStyle(
-                  fontSize: 24,
-                  color: color,
-                  fontFamily: 'Brick Sans',
-                  fontWeight: FontWeight.bold,
-                  letterSpacing: 2,
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
     );
   }
 }

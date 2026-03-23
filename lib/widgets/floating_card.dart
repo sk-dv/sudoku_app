@@ -20,47 +20,39 @@ class FloatingCard extends StatelessWidget {
     return BlocBuilder<SudokuGameCubit, SudokuGameState>(
       builder: (context, state) {
         final isDark = state.style.mode.isDark;
+        final shadowColor = isDark
+            ? Colors.black.withValues(alpha: 0.6)
+            : Colors.black.withValues(alpha: 0.18);
 
         return Container(
-          margin: EdgeInsets.all(elevation),
+          margin: EdgeInsets.only(
+            right: elevation / 2,
+            bottom: elevation / 2,
+          ),
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
-              // Sombra pixelada estilo 8-bit
               BoxShadow(
-                color: (isDark
-                    ? Colors.black.withValues(alpha:0.4)
-                    : const Color(0xFF880E4F).withValues(alpha:0.3)),
-                offset: Offset(elevation, elevation),
+                color: shadowColor,
+                offset: Offset(elevation / 2, elevation / 2),
                 blurRadius: 0,
-                spreadRadius: 0,
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(16),
             child: Container(
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: isDark
-                      ? [
-                          const Color(0xFF2A2A4E).withValues(alpha:0.85),
-                          const Color(0xFF1A1A3E).withValues(alpha:0.85),
-                        ]
-                      : [
-                          const Color(0xFFFFE5E5).withValues(alpha:0.9),
-                          const Color(0xFFFFF0E5).withValues(alpha:0.9),
-                        ],
-                ),
+                color: isDark
+                    ? const Color(0xFF1C1C2E)
+                    : Colors.white,
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha:0.1)
-                      : const Color(0xFF880E4F).withValues(alpha:0.2),
-                  width: 2,
+                      ? Colors.white.withValues(alpha: 0.07)
+                      : Colors.black.withValues(alpha: 0.07),
+                  width: 1,
                 ),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(16),
               ),
               padding: padding,
               child: child,

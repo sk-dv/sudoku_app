@@ -1,202 +1,145 @@
-# Documentación de SudokuGameModel
+# Sudoku 8bit — Flutter App
 
-## Introducción
+App móvil de Sudoku con estética 8-bit. Parte del monorepo `sudoku/`.
 
-`SudokuGameModel` es una implementación funcional para gestionar el estado del juego de Sudoku. Está diseñado siguiendo principios de inmutabilidad y programación funcional para hacer que el código sea más predecible y menos propenso a errores.
+## Stack
 
-## Estructura del modelo
+| Capa | Tecnología |
+|---|---|
+| App | Flutter 3.29.3 (iOS / Android / macOS) |
+| Auth | Firebase Auth — Google Sign-In + Sign in with Apple |
+| Backend | Python/Flask en Railway (`sudoku-api/`) |
+| Base de datos | PostgreSQL en Railway |
+| Estado | BLoC (flutter_bloc) + Hive (local) |
 
-El modelo contiene toda la información necesaria para representar el estado del juego:
+## Estructura
 
-```dart
-class SudokuGameModel {
-  final List<List<int>> board;           // Matriz 9x9 con los números del tablero (0 = vacío)
-  final List<List<bool>> isOriginal;     // Matriz 9x9 que indica qué celdas son originales (no modificables)
-  final List<List<bool>> isSelected;     // Matriz 9x9 que indica qué celda está seleccionada
-  final List<List<bool>> isHighlighted;  // Matriz 9x9 que indica qué celdas están resaltadas
-  final List<List<bool>> isErrorCell;    // Matriz 9x9 que indica qué celdas contienen errores
-  final int selectedRow;                 // Fila de la celda seleccionada (-1 si ninguna)
-  final int selectedCol;                 // Columna de la celda seleccionada (-1 si ninguna)
-  final DifficultLevel difficulty;       // Nivel de dificultad del juego
-  final String formattedTime;            // Tiempo formateado (MM:SS)
-  final int secondsElapsed;              // Segundos transcurridos
-
-  // Constructor que exige todos los campos
-  const SudokuGameModel({
-    required this.board,
-    required this.isOriginal,
-    // ...
-  });
-}
+```
+lib/
+├── main.dart                     # Inicializa Firebase + Hive + runApp
+├── sudoku.dart                   # Root widget, BlocProviders, ShellNavigation, AppBar
+├── firebase_options.dart         # NO incluido en git — generar con flutterfire configure
+├── cubit/
+│   ├── auth_cubit.dart           # AuthInitial|Loading|Authenticated|Guest|Error
+│   ├── navigation_cubit.dart
+│   ├── sudoku_board_cubit.dart
+│   └── game_coordinator_cubit.dart
+├── services/
+│   ├── auth_service.dart         # Singleton: signInWithGoogle, signInWithApple, signOut
+│   ├── sudoku_api_service.dart   # Inyecta Bearer token automáticamente
+│   ├── game_save_service.dart    # Persistencia local con Hive
+│   ├── game_command_manager.dart
+│   └── timer_service.dart
+├── screens/
+│   ├── login_screen.dart
+│   ├── level_selection_screen.dart
+│   ├── daily_puzzle_screen.dart
+│   ├── stats_screen.dart
+│   └── main_navigation_screen.dart
+├── models/
+└── widgets/
+    ├── floating_card.dart
+    ├── floating_bottom_navigation.dart
+    ├── shadow_button.dart
+    └── shadow_icon.dart
 ```
 
-## Principio de inmutabilidad
+## Setup inicial (una sola vez)
 
-El modelo es completamente inmutable:
+```bash
+# 1. Instalar flutterfire CLI
+dart pub global activate flutterfire_cli
 
-- Todos los campos son `final`
-- No hay métodos que modifiquen el estado interno
-- Cada operación devuelve un nuevo modelo con los cambios aplicados
+# 2. Configurar Firebase (genera lib/firebase_options.dart)
+flutterfire configure
 
-## Métodos principales
+# 3. Colocar archivos de credenciales (NO están en git):
+#    ios/Runner/GoogleService-Info.plist
+#    macos/Runner/GoogleService-Info.plist
+#    android/app/google-services.json
 
-### Inicialización
+# 4. Instalar dependencias
+flutter pub get
 
-```dart
-factory SudokuGameModel.initialize({DifficultLevel difficulty = DifficultLevel.medium}) {
-  // Crea un modelo vacío
-  // Genera un tablero de juego
-  // Devuelve el modelo inicializado
-}
+# 5. iOS / macOS — instalar pods
+cd ios && pod install && cd ..
+cd macos && pod install && cd ..
 ```
 
-Este método estático crea un nuevo modelo con un tablero de juego generado según la dificultad especificada.
+## Flujo de Auth
 
-### Selección de celda
+1. App abre → `AuthCubit` verifica `FirebaseAuth.currentUser` (auto-login si hay sesión)
+2. Sin sesión → `LoginScreen`
+3. "Continuar con Google" → Google Sign-In → Firebase → `AuthAuthenticated`
+4. "Continuar con Apple" → Sign in with Apple → Firebase → `AuthAuthenticated`
+5. "Continuar sin cuenta" → `AuthGuest` (progreso solo en Hive local)
+6. Firebase vincula automáticamente cuentas con el mismo email (configurado en Firebase Console)
 
-```dart
-SudokuGameModel selectCell(int row, int col) {
-  // Crea nuevas matrices para isSelected e isHighlighted
-  // Marca la celda seleccionada
-  // Resalta la fila, columna y subcuadrícula relacionadas
-  // Devuelve un nuevo modelo con los cambios
-}
+## Niveles de dificultad
+
+Sincronizados con el backend (`DifficultyLevel` en `sudoku-api/`):
+
+| App | Backend | Color |
+|---|---|---|
+| PRINCIPIANTE | `BEGINNER` | Verde claro |
+| FÁCIL | `EASY` | Verde |
+| MEDIO | `MEDIUM` | Azul |
+| DIFÍCIL | `HARD` | Amarillo |
+| EXPERTO | `EXPERT` | Naranja |
+| MAESTRO | `MASTER` | Rojo |
+| GRAN MAESTRO | `GRANDMASTER` | Púrpura |
+
+## API
+
+Base URL: `https://sudoku-api-production-ff31.up.railway.app/api`
+
+| Endpoint | Auth | Descripción |
+|---|---|---|
+| `GET /health` | No | Health check |
+| `GET /game?difficulty=MEDIUM` | Bearer | Puzzle aleatorio |
+| `GET /daily?difficulty=MEDIUM` | Bearer | Puzzle del día |
+| `GET /stats` | No | Conteo de puzzles por nivel |
+| `POST /validate` | No | Valida tablero |
+| `POST /solve` | No | Resuelve tablero |
+| `POST /auth/register` | Bearer | Registra/actualiza usuario (pendiente) |
+
+El `SudokuApiService` inyecta `Authorization: Bearer <firebase_id_token>` automáticamente si hay sesión activa.
+
+## Credenciales — qué NO está en git
+
+```
+lib/firebase_options.dart
+ios/Runner/GoogleService-Info.plist
+macos/Runner/GoogleService-Info.plist
+android/app/google-services.json
+*.env
 ```
 
-Cuando el usuario selecciona una celda, este método:
+## Correr la app
 
-1. Crea una nueva matriz `isSelected` con todas las celdas desmarcadas
-2. Marca la celda seleccionada (row, col) como seleccionada
-3. Crea una nueva matriz `isHighlighted` para resaltar fila, columna y subcuadrícula
-4. Devuelve un nuevo modelo con estas matrices actualizadas
+```bash
+# iOS
+flutter run -d ios
 
-### Ingresar un número
+# macOS
+flutter run -d macos
 
-```dart
-SudokuGameModel enterNumber(int number) {
-  // Verifica si hay una celda seleccionada y no es original
-  // Crea una nueva matriz para el tablero
-  // Actualiza el número en la celda seleccionada
-  // Verifica errores
-  // Devuelve un nuevo modelo
-}
+# Android
+flutter run -d android
 ```
 
-Cuando el usuario ingresa un número:
+## Estado actual (Marzo 2026)
 
-1. Se verifica que haya una celda seleccionada y que no sea original
-2. Se crea una copia del tablero
-3. Se actualiza el número en la celda seleccionada
-4. Se verifica si hay errores (números duplicados)
-5. Se devuelve un nuevo modelo con el tablero actualizado
+**Completado**
+- Firebase Auth con Google Sign-In, Sign in with Apple y modo invitado
+- Auto-login con sesión persistente
+- Vinculación de cuentas por email (Firebase Console)
+- 7 niveles sincronizados con backend
+- Rediseno visual: cards limpias, tipografia bold, nav minimalista
+- Progreso guardado localmente con Hive
 
-### Borrar una celda
-
-```dart
-SudokuGameModel clearCell() {
-  // Verifica si hay una celda seleccionada y no es original
-  // Crea una nueva matriz para el tablero
-  // Establece la celda seleccionada a 0 (vacía)
-  // Verifica errores
-  // Devuelve un nuevo modelo
-}
-```
-
-Similar a `enterNumber`, pero establece la celda a 0 (vacía).
-
-### Verificar errores
-
-```dart
-SudokuGameModel checkErrors() {
-  // Crea una nueva matriz para isErrorCell
-  // Verifica errores en filas
-  // Verifica errores en columnas
-  // Verifica errores en subcuadrículas
-  // Devuelve un nuevo modelo con la matriz isErrorCell actualizada
-}
-```
-
-Este método marca las celdas que contienen errores (números duplicados en la misma fila, columna o subcuadrícula).
-
-## Flujo de trabajo
-
-1. **Inicialización**:
-
-   ```dart
-   final gameModel = SudokuGameModel.initialize();
-   ```
-
-2. **Seleccionar una celda**:
-
-   ```dart
-   final updatedModel = gameModel.selectCell(3, 4);
-   ```
-
-3. **Ingresar un número**:
-
-   ```dart
-   final newerModel = updatedModel.enterNumber(5);
-   ```
-
-4. **Borrar una celda**:
-   ```dart
-   final newestModel = newerModel.clearCell();
-   ```
-
-## Cómo extender el modelo
-
-### Agregar un nuevo campo
-
-1. Añade el campo como `final` en la clase
-2. Actualiza el constructor principal
-3. Actualiza todos los métodos que devuelven un nuevo modelo para incluir el nuevo campo
-
-### Agregar una nueva funcionalidad
-
-1. Crea un nuevo método que retorne un `SudokuGameModel`
-2. Implementa la lógica para crear nuevas estructuras de datos según sea necesario
-3. Retorna un nuevo modelo con los cambios aplicados
-
-## Mejores prácticas
-
-1. **Nunca modifiques directamente** las estructuras de datos del modelo
-2. **Siempre crea nuevas copias** de las matrices cuando necesites modificarlas
-3. **Mantén los métodos puros** sin efectos secundarios
-4. **Actualiza el modelo** a través de los métodos existentes, no crees nuevas instancias manualmente
-
-Contexto de continuación
-
-Proyecto: App de Sudoku en Flutter con arquitectura refactorizada para reducir acoplamiento.
-
-Instrucciones de trabajo: Sé sucinto, preciso, simple, elegante y legible en todas las respuestas.
-
-Arquitectura actual:
-Servicios:
-├─ TimerService - Timer independiente con Stream
-└─ GameSaveService - Persistencia con Hive
-
-Cubits:
-├─ NavigationCubit - Navegación menu/game
-├─ GameCoordinatorCubit - Orquesta timer + guardado + hints
-├─ SudokuGameCubit - Solo tema/símbolos/pausa
-└─ SudokuBoardCubit - Tablero + comandos (undo/redo)
-
-UI:
-└─ Shell Navigation - Background persistente con nubes animadas
-
-Último commit: feat: decouple timer logic into dedicated service
-
-Completado:
-
-- ✓ Navegación con background persistente
-- ✓ Timer desacoplado en GameCoordinator
-- ✓ Guardado único (sobrescribe anterior)
-- ✓ Pistas sincronizadas con GameCoordinator
-
-Pendiente/Próximo:
-
-1. Probar flujo completo (timer, guardado, pistas)
-2. Opcional: Refactorizar SudokuBoardCubit.idx (duplicado con GameCoordinator)
-3. Opcional: Limpiar código legacy si existe
-
-Problemas conocidos: Ninguno reportado después del último fix.
+**Pendiente**
+- Modal de auth unificado (Google + Apple en bottom sheet)
+- Backend: `POST /auth/register` con firebase-admin
+- Tablas `users`, `game_progress`, `user_stats` en PostgreSQL
+- Guardado de progreso en cloud

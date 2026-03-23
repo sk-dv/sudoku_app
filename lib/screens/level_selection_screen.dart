@@ -123,6 +123,11 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                           const SizedBox(height: 24),
                         ],
                         _LevelCard(
+                          difficulty: DifficultLevel.beginner,
+                          count: (level) => _boardsSummary?[level],
+                        ),
+                        const SizedBox(height: 8),
+                        _LevelCard(
                           difficulty: DifficultLevel.easy,
                           count: (level) => _boardsSummary?[level],
                         ),
@@ -144,6 +149,11 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
                         const SizedBox(height: 8),
                         _LevelCard(
                           difficulty: DifficultLevel.master,
+                          count: (level) => _boardsSummary?[level],
+                        ),
+                        const SizedBox(height: 8),
+                        _LevelCard(
+                          difficulty: DifficultLevel.grandmaster,
                           count: (level) => _boardsSummary?[level],
                         ),
                         SizedBox(height: context.height * 0.11),
@@ -172,85 +182,80 @@ class _LevelCard extends StatelessWidget {
         context.read<NavigationCubit>().goToGame(difficulty);
       },
       child: FloatingCard(
-        elevation: 6,
-        padding: const EdgeInsets.all(10),
+        elevation: 4,
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
             Container(
-              width: 40,
-              height: 40,
+              width: 44,
+              height: 44,
               decoration: BoxDecoration(
-                color: difficulty.color.withValues(alpha: 0.2),
+                color: difficulty.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: difficulty.color, width: 2),
               ),
               child: Center(
-                child: Icon(difficulty.icon, color: difficulty.color, size: 22),
+                child: Icon(difficulty.icon, color: difficulty.color, size: 24),
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(width: 14),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    difficulty.level,
-                    style: TextStyle(
-                      color: difficulty.color,
-                      fontSize: 18,
-                      fontFamily: 'Brick Sans',
-                      letterSpacing: 2,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      Text(
+                        difficulty.level,
+                        style: TextStyle(
+                          color: difficulty.color,
+                          fontSize: 20,
+                          fontFamily: 'Brick Sans',
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      if (count != null) ...[
+                        const SizedBox(width: 8),
+                        Builder(builder: (context) {
+                          final n = count?.call(difficulty.levelMap());
+                          if (n == null) return const SizedBox.shrink();
+                          return Text(
+                            '$n',
+                            style: TextStyle(
+                              color: difficulty.color.withValues(alpha: 0.5),
+                              fontSize: 11,
+                              fontFamily: 'Brick Sans',
+                              fontWeight: FontWeight.bold,
+                            ),
+                          );
+                        }),
+                      ],
+                    ],
                   ),
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 3),
                   BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
                     selector: (state) => state.style.borderColor,
                     builder: (context, textColor) {
                       return Text(
                         difficulty.description,
                         style: TextStyle(
-                          color: textColor.withValues(alpha: 0.7),
-                          fontSize: 12,
+                          color: textColor.withValues(alpha: 0.5),
+                          fontSize: 11,
                           fontFamily: 'Brick Sans',
-                          letterSpacing: 1,
+                          letterSpacing: 0.5,
                         ),
                       );
                     },
                   ),
-                  if (count != null) ...[
-                    const SizedBox(height: 8),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 6,
-                        vertical: 2,
-                      ),
-                      decoration: BoxDecoration(
-                        color: difficulty.color.withValues(alpha: 0.2),
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: difficulty.color.withValues(alpha: 0.5),
-                          width: 1,
-                        ),
-                      ),
-                      child: Text(
-                        '${count?.call(difficulty.levelMap())} puzzles',
-                        style: TextStyle(
-                          color: difficulty.color,
-                          fontSize: 10,
-                          fontFamily: 'Brick Sans',
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ),
-                  ],
                 ],
               ),
             ),
             Icon(
               Icons.arrow_forward_ios_rounded,
-              color: difficulty.color,
-              size: 24,
+              color: difficulty.color.withValues(alpha: 0.6),
+              size: 16,
             ),
           ],
         ),
@@ -260,14 +265,18 @@ class _LevelCard extends StatelessWidget {
 }
 
 enum DifficultLevel {
+  beginner,
   easy,
   medium,
   hard,
   expert,
-  master;
+  master,
+  grandmaster;
 
   String get level {
     switch (this) {
+      case DifficultLevel.beginner:
+        return 'PRINCIPIANTE';
       case DifficultLevel.easy:
         return 'FÁCIL';
       case DifficultLevel.medium:
@@ -278,11 +287,15 @@ enum DifficultLevel {
         return 'EXPERTO';
       case DifficultLevel.master:
         return 'MAESTRO';
+      case DifficultLevel.grandmaster:
+        return 'GRAN MAESTRO';
     }
   }
 
   IconData get icon {
     switch (this) {
+      case DifficultLevel.beginner:
+        return Icons.school_rounded;
       case DifficultLevel.easy:
         return Icons.sentiment_satisfied_rounded;
       case DifficultLevel.medium:
@@ -293,11 +306,15 @@ enum DifficultLevel {
         return Icons.workspace_premium_rounded;
       case DifficultLevel.master:
         return Icons.emoji_events_rounded;
+      case DifficultLevel.grandmaster:
+        return Icons.military_tech_rounded;
     }
   }
 
   String get description {
     switch (this) {
+      case DifficultLevel.beginner:
+        return 'Para dar los primeros pasos';
       case DifficultLevel.easy:
         return 'Perfecto para comenzar';
       case DifficultLevel.medium:
@@ -308,11 +325,15 @@ enum DifficultLevel {
         return 'Solo para expertos';
       case DifficultLevel.master:
         return 'El desafío supremo';
+      case DifficultLevel.grandmaster:
+        return 'Más allá del límite';
     }
   }
 
   Color get color {
     switch (this) {
+      case DifficultLevel.beginner:
+        return const Color(0xFF8BC34A);
       case DifficultLevel.easy:
         return const Color(0xFF4CAF50);
       case DifficultLevel.medium:
@@ -323,26 +344,16 @@ enum DifficultLevel {
         return const Color(0xFFFF9800);
       case DifficultLevel.master:
         return const Color(0xFFF44336);
+      case DifficultLevel.grandmaster:
+        return const Color(0xFF9C27B0);
     }
   }
 
-  String levelMap() {
+  /// Nombre exacto del nivel en el backend (usado en /game y /stats).
+  String backendName() {
     switch (this) {
-      case DifficultLevel.easy:
-        return 'VERY_EASY';
-      case DifficultLevel.medium:
-        return 'EASY';
-      case DifficultLevel.hard:
-        return 'HARD';
-      case DifficultLevel.expert:
-        return 'VERY_HARD';
-      case DifficultLevel.master:
-        return 'MASTER';
-    }
-  }
-
-  String gameMap() {
-    switch (this) {
+      case DifficultLevel.beginner:
+        return 'BEGINNER';
       case DifficultLevel.easy:
         return 'EASY';
       case DifficultLevel.medium:
@@ -353,8 +364,14 @@ enum DifficultLevel {
         return 'EXPERT';
       case DifficultLevel.master:
         return 'MASTER';
+      case DifficultLevel.grandmaster:
+        return 'GRANDMASTER';
     }
   }
+
+  String levelMap() => backendName();
+
+  String gameMap() => backendName();
 }
 
 class _ContinueGameCard extends StatelessWidget {

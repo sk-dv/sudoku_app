@@ -13,6 +13,7 @@ import 'package:sudoku_app/cubit/navigation_cubit.dart';
 import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
 
 import 'models/game_step.dart';
+import 'models/style.dart';
 import 'models/token_type.dart';
 import 'widgets/pixelated_background.dart';
 import 'widgets/shadow_button.dart';
@@ -188,47 +189,58 @@ class _UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (authState is AuthAuthenticated) {
-      final user = (authState as AuthAuthenticated);
-      return GestureDetector(
-        onTap: () => _showAccountDialog(context, user),
-        child: Container(
-          margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-          child: CircleAvatar(
-            radius: 16,
-            backgroundColor: const Color(0xFFFFC759),
-            backgroundImage: user.photoUrl != null
-                ? NetworkImage(user.photoUrl!)
-                : null,
-            child: user.photoUrl == null
-                ? Text(
-                    user.displayName.isNotEmpty
-                        ? user.displayName[0].toUpperCase()
-                        : '?',
-                    style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D2D2D),
-                    ),
-                  )
-                : null,
+    return BlocSelector<SudokuGameCubit, SudokuGameState, SudokuStyle>(
+      selector: (state) => state.style,
+      builder: (context, style) {
+        return ShadowButton(
+          radius: 40,
+          containerSize: const (60, 60),
+          shadowSize: const (50, 50),
+          restSpace: 8,
+          pressedSpace: 7.5,
+          shadowOffset: const Offset(-6, 3),
+          shadowColor: style.cellColor.withValues(alpha: 0.5),
+          onPressed: () {
+            if (authState is AuthAuthenticated) {
+              _showAccountDialog(context, authState as AuthAuthenticated);
+            } else {
+              _showGuestDialog(context);
+            }
+          },
+          child: Container(
+            margin: const EdgeInsets.only(right: 10, top: 10),
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(40),
+              color: style.themeColor,
+            ),
+            child: Center(child: _buildAvatarContent()),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildAvatarContent() {
+    if (authState is AuthAuthenticated) {
+      final user = authState as AuthAuthenticated;
+      if (user.photoUrl != null) {
+        return CircleAvatar(
+          radius: 13,
+          backgroundImage: NetworkImage(user.photoUrl!),
+        );
+      }
+      return Text(
+        user.displayName.isNotEmpty ? user.displayName[0].toUpperCase() : '?',
+        style: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.bold,
+          color: Color(0xFFFFFBF0),
+          fontFamily: 'Brick Sans',
         ),
       );
     }
-
-    // Guest
-    return GestureDetector(
-      onTap: () => _showGuestDialog(context),
-      child: Container(
-        margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
-        child: const CircleAvatar(
-          radius: 16,
-          backgroundColor: Color(0xFF6B6B8A),
-          child: Icon(Icons.person_outline, size: 18, color: Colors.white),
-        ),
-      ),
-    );
+    return const Icon(Icons.person_outline, size: 22, color: Color(0xFFFFFBF0));
   }
 
   void _showAccountDialog(BuildContext context, AuthAuthenticated user) {
