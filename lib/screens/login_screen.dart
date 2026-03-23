@@ -114,28 +114,160 @@ class _AuthButtons extends StatelessWidget {
     return BlocBuilder<AuthCubit, AuthState>(
       builder: (context, state) {
         final isLoading = state is AuthLoading;
-        final showApple = defaultTargetPlatform != TargetPlatform.android;
-
         return Column(
           children: [
             _SocialButton(
-              label: 'CONTINUAR CON GOOGLE',
+              label: 'INICIAR SESIÓN',
               isLoading: isLoading,
-              onPressed: () => context.read<AuthCubit>().signInWithGoogle(),
+              onPressed: () {
+                final authCubit = context.read<AuthCubit>();
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (_) => BlocProvider.value(
+                    value: authCubit,
+                    child: _AuthModalSheet(style: style),
+                  ),
+                );
+              },
             ),
-            if (showApple) ...[
-              const SizedBox(height: 14),
-              _SocialButton(
-                label: 'CONTINUAR CON APPLE',
-                isLoading: isLoading,
-                onPressed: () => context.read<AuthCubit>().signInWithApple(),
-              ),
-            ],
             const SizedBox(height: 20),
             _GuestButton(style: style, isLoading: isLoading),
           ],
         );
       },
+    );
+  }
+}
+
+// ─── Modal de opciones de auth ────────────────────────────────────────────────
+
+class _AuthModalSheet extends StatelessWidget {
+  const _AuthModalSheet({required this.style});
+  final dynamic style;
+
+  @override
+  Widget build(BuildContext context) {
+    final showApple = defaultTargetPlatform != TargetPlatform.android;
+
+    return BlocListener<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthAuthenticated || state is AuthError) {
+          Navigator.of(context).pop();
+        }
+      },
+      child: Padding(
+        padding: EdgeInsets.only(
+          left: 20,
+          right: 20,
+          bottom: MediaQuery.of(context).viewInsets.bottom + 32,
+        ),
+        child: FloatingCard(
+          elevation: 8,
+          padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+          child: BlocBuilder<AuthCubit, AuthState>(
+            builder: (context, state) {
+              final isLoading = state is AuthLoading;
+              return Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2D2D2D).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 20),
+                  const Text(
+                    'INICIAR SESIÓN',
+                    style: TextStyle(
+                      fontFamily: 'Brick Sans',
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF2D2D2D),
+                      letterSpacing: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  _ModalButton(
+                    label: 'CONTINUAR CON GOOGLE',
+                    filled: true,
+                    isLoading: isLoading,
+                    onPressed: () => context.read<AuthCubit>().signInWithGoogle(),
+                  ),
+                  if (showApple) ...[
+                    const SizedBox(height: 12),
+                    _ModalButton(
+                      label: 'CONTINUAR CON APPLE',
+                      filled: false,
+                      isLoading: isLoading,
+                      onPressed: () => context.read<AuthCubit>().signInWithApple(),
+                    ),
+                  ],
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModalButton extends StatelessWidget {
+  const _ModalButton({
+    required this.label,
+    required this.filled,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
+  final String label;
+  final bool filled;
+  final bool isLoading;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: isLoading ? null : onPressed,
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: 14),
+        decoration: BoxDecoration(
+          color: filled
+              ? (isLoading
+                  ? const Color(0xFF2D2D2D).withValues(alpha: 0.5)
+                  : const Color(0xFF2D2D2D))
+              : Colors.transparent,
+          border: filled ? null : Border.all(color: const Color(0xFF2D2D2D), width: 2),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Center(
+          child: isLoading && filled
+              ? const SizedBox(
+                  width: 20,
+                  height: 20,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    color: Color(0xFFFFFBF0),
+                  ),
+                )
+              : Text(
+                  label,
+                  style: TextStyle(
+                    fontFamily: 'Brick Sans',
+                    fontSize: 13,
+                    color: filled ? const Color(0xFFFFFBF0) : const Color(0xFF2D2D2D),
+                    letterSpacing: 1.5,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+        ),
+      ),
     );
   }
 }

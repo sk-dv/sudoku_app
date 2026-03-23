@@ -138,8 +138,3 @@ flutter run -d android
 - Rediseno visual: cards limpias, tipografia bold, nav minimalista
 - Progreso guardado localmente con Hive
 
-**Pendiente**
-- Modal de auth unificado (Google + Apple en bottom sheet)
-- Backend: `POST /auth/register` con firebase-admin
-- Tablas `users`, `game_progress`, `user_stats` en PostgreSQL
-- Guardado de progreso en cloud
