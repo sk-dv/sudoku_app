@@ -24,6 +24,7 @@ dependencies:
   firebase_auth: ^5.5.0
   google_sign_in: ^6.2.0
   sign_in_with_apple: ^6.0.0
+  google_fonts: ^6.2.1
 
 dev_dependencies:
   flutter_test:
@@ -40,16 +41,6 @@ flutter:
     - assets/cats/
     - assets/halloween/
     - assets/sea_animals/
-  fonts:
-    - family: Overbit Shadow
-      fonts:
-        - asset: assets/Overbit-Shadow.otf
-    - family: Overbit Regular
-      fonts:
-        - asset: assets/Overbit-Regular.otf
-    - family: Brick Sans
-      fonts:
-        - asset: assets/NTBrickSans.otf
 
 import_sorter:
   emojis: true

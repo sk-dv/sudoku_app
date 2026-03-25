@@ -242,7 +242,6 @@ class _ButtonWithPreviewState extends State<_ButtonWithPreview> {
                             fontSize: widget.type.isImage ? 10 : 16,
                             fontWeight: FontWeight.w900,
                             color: widget.style.flatColor,
-                            fontFamily: 'Brick Sans',
                           ),
                           child: Text(
                             '${widget.number}',

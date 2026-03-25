@@ -112,7 +112,6 @@ class _ControlButton extends StatelessWidget {
                               color: style.background,
                               fontSize: 9,
                               fontWeight: FontWeight.bold,
-                              fontFamily: 'Brick Sans',
                             ),
                           ),
                         ),

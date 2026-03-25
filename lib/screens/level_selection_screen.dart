@@ -183,79 +183,59 @@ class _LevelCard extends StatelessWidget {
       },
       child: FloatingCard(
         elevation: 4,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        padding: EdgeInsets.zero,
         child: Row(
           children: [
             Container(
-              width: 44,
-              height: 44,
+              width: 3,
+              height: 52,
               decoration: BoxDecoration(
-                color: difficulty.color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Center(
-                child: Icon(difficulty.icon, color: difficulty.color, size: 24),
+                color: difficulty.color,
+                borderRadius: const BorderRadius.only(
+                  topLeft: Radius.circular(16),
+                  bottomLeft: Radius.circular(16),
+                ),
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 16),
             Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.baseline,
+                textBaseline: TextBaseline.alphabetic,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
-                    children: [
-                      Text(
-                        difficulty.level,
-                        style: TextStyle(
-                          color: difficulty.color,
-                          fontSize: 20,
-                          fontFamily: 'Brick Sans',
-                          letterSpacing: 1.5,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      if (count != null) ...[
-                        const SizedBox(width: 8),
-                        Builder(builder: (context) {
-                          final n = count?.call(difficulty.levelMap());
-                          if (n == null) return const SizedBox.shrink();
-                          return Text(
-                            '$n',
-                            style: TextStyle(
-                              color: difficulty.color.withValues(alpha: 0.5),
-                              fontSize: 11,
-                              fontFamily: 'Brick Sans',
-                              fontWeight: FontWeight.bold,
-                            ),
-                          );
-                        }),
-                      ],
-                    ],
+                  Text(
+                    difficulty.level,
+                    style: const TextStyle(
+                      color: Color(0xFFFFFBF0),
+                      fontSize: 17,
+                      letterSpacing: 1.5,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
-                  const SizedBox(height: 3),
-                  BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
-                    selector: (state) => state.style.borderColor,
-                    builder: (context, textColor) {
+                  if (count != null) ...[
+                    const SizedBox(width: 8),
+                    Builder(builder: (context) {
+                      final n = count?.call(difficulty.levelMap());
+                      if (n == null) return const SizedBox.shrink();
                       return Text(
-                        difficulty.description,
-                        style: TextStyle(
-                          color: textColor.withValues(alpha: 0.5),
-                          fontSize: 11,
-                          fontFamily: 'Brick Sans',
-                          letterSpacing: 0.5,
+                        '$n',
+                        style: const TextStyle(
+                          color: Color(0xFFFFFBF0),
+                          fontSize: 12,
                         ),
                       );
-                    },
-                  ),
+                    }),
+                  ],
                 ],
               ),
             ),
-            Icon(
-              Icons.arrow_forward_ios_rounded,
-              color: difficulty.color.withValues(alpha: 0.6),
-              size: 16,
+            const Padding(
+              padding: EdgeInsets.only(right: 16),
+              child: Icon(
+                Icons.arrow_forward_ios_rounded,
+                color: Color(0x66FFFBF0),
+                size: 13,
+              ),
             ),
           ],
         ),
@@ -406,7 +386,6 @@ class _ContinueGameCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 16,
                         color: color,
-                        fontFamily: 'Brick Sans',
                         letterSpacing: 2,
                         fontWeight: FontWeight.bold,
                       ),
@@ -421,7 +400,6 @@ class _ContinueGameCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: color.withValues(alpha: 0.7),
-                    fontFamily: 'Brick Sans',
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -430,7 +408,6 @@ class _ContinueGameCard extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 12,
                     color: color.withValues(alpha: 0.7),
-                    fontFamily: 'Brick Sans',
                   ),
                 ),
               ],
@@ -452,7 +429,6 @@ class _ContinueGameCard extends StatelessWidget {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
-                            fontFamily: 'Brick Sans',
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -475,7 +451,6 @@ class _ContinueGameCard extends StatelessWidget {
                           style: TextStyle(
                             color: color,
                             fontSize: 12,
-                            fontFamily: 'Brick Sans',
                             fontWeight: FontWeight.bold,
                           ),
                         ),

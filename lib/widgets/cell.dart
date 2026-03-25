@@ -138,7 +138,6 @@ class NumberCell extends StatelessWidget {
                 fontSize: isSelected ? 14 : 12,
                 fontWeight: FontWeight.w900,
                 color: textColor,
-                fontFamily: 'Brick Sans',
               ),
               child: Text(
                 '$value',

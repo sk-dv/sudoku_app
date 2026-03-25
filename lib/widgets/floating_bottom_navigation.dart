@@ -119,7 +119,6 @@ class _NavItem extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 7,
                     color: isSelected ? selectedColor : normalColor,
-                    fontFamily: 'Brick Sans',
                     fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     letterSpacing: 0.5,
                   ),

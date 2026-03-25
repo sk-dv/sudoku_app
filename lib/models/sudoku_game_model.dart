@@ -14,6 +14,7 @@ class SudokuGameModel {
   final int hintsRemaining;
   final List<(int, int)> hintsCoordinates;
   final List<List<int>> solutionGrid;
+  final int? puzzleId;
 
   const SudokuGameModel({
     required this.board,
@@ -27,6 +28,7 @@ class SudokuGameModel {
     required this.hintsRemaining,
     this.hintsCoordinates = const [],
     this.solutionGrid = const [],
+    this.puzzleId,
   });
 
   SudokuGameModel copy({
@@ -54,6 +56,7 @@ class SudokuGameModel {
       hintsRemaining: hintsRemaining ?? this.hintsRemaining,
       hintsCoordinates: hintsCoordinates ?? this.hintsCoordinates,
       solutionGrid: solutionGrid ?? this.solutionGrid,
+      puzzleId: puzzleId,
     );
   }
 
@@ -79,6 +82,7 @@ class SudokuGameModel {
       ),
       hintsCoordinates:
           sudokuGame.hintsCoordinates.map((c) => (c[0], c[1])).toList(),
+      puzzleId: sudokuGame.puzzleId,
     );
 
     return model.checkErrors();

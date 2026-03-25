@@ -25,7 +25,6 @@ class TextShadow extends StatelessWidget {
             style: TextStyle(
               fontSize: fontSize,
               color: Colors.black.withValues(alpha: 0.3),
-              fontFamily: 'Brick Sans',
               letterSpacing: 7,
               fontWeight: FontWeight.bold,
             ),
@@ -37,7 +36,6 @@ class TextShadow extends StatelessWidget {
           style: TextStyle(
             fontSize: fontSize,
             color: mainColor,
-            fontFamily: 'Brick Sans',
             letterSpacing: 7,
             fontWeight: FontWeight.bold,
             shadows: [

@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/cubit/navigation_cubit.dart';
 import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
+import 'package:sudoku_app/models/game_progress.dart';
+import 'package:sudoku_app/services/daily_progress_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 
@@ -14,6 +16,9 @@ class VictoryDialog extends StatelessWidget {
       backgroundColor: Colors.transparent,
       child: BlocBuilder<GameCoordinatorCubit, GameCoordinatorState>(
         builder: (context, coordState) {
+          if (coordState.gameSource == GameSource.daily && coordState.difficulty != null) {
+            DailyProgressService.saveCompleted(coordState.difficulty!.level);
+          }
           return BlocBuilder<SudokuGameCubit, SudokuGameState>(
             builder: (context, state) {
               final style = state.style;
@@ -43,7 +48,6 @@ class VictoryDialog extends StatelessWidget {
                                 fontSize: 18,
                                 fontWeight: FontWeight.w900,
                                 color: style.selectedCell,
-                                fontFamily: 'Brick Sans',
                                 letterSpacing: 2,
                               ),
                             ),
@@ -63,7 +67,6 @@ class VictoryDialog extends StatelessWidget {
                                     fontSize: 20,
                                     fontWeight: FontWeight.bold,
                                     color: style.selectedCell,
-                                    fontFamily: 'Brick Sans',
                                     letterSpacing: 1,
                                   ),
                                 ),
@@ -91,7 +94,6 @@ class VictoryDialog extends StatelessWidget {
                                     fontSize: 14,
                                     fontWeight: FontWeight.bold,
                                     color: style.background,
-                                    fontFamily: 'Brick Sans',
                                     letterSpacing: 1.5,
                                   ),
                                 ),

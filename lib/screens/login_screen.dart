@@ -19,7 +19,7 @@ class LoginScreen extends StatelessWidget {
         if (state is AuthError) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(state.message, style: const TextStyle(fontFamily: 'Brick Sans')),
+              content: Text(state.message),
               backgroundColor: const Color(0xFFFF5E5B),
             ),
           );
@@ -70,7 +70,6 @@ class _PixelLogo extends StatelessWidget {
         Text(
           'SUDOKU',
           style: TextStyle(
-            fontFamily: 'Overbit Shadow',
             fontSize: 64,
             color: const Color(0xFFFFFBF0),
             letterSpacing: 6,
@@ -81,21 +80,10 @@ class _PixelLogo extends StatelessWidget {
         Text(
           '8 B I T',
           style: TextStyle(
-            fontFamily: 'Overbit Shadow',
             fontSize: 28,
             color: const Color(0xFFFFC759),
             letterSpacing: 12,
             shadows: [Shadow(color: Colors.black.withValues(alpha: 0.4), offset: const Offset(3, 3))],
-          ),
-        ),
-        const SizedBox(height: 20),
-        Text(
-          'El sudoku de siempre, con otro sabor.',
-          style: TextStyle(
-            fontFamily: 'Brick Sans',
-            fontSize: 12,
-            color: const Color(0xFFFFFBF0).withValues(alpha: 0.5),
-            letterSpacing: 0.5,
           ),
         ),
       ],
@@ -184,7 +172,6 @@ class _AuthModalSheet extends StatelessWidget {
                   const Text(
                     'INICIAR SESIÓN',
                     style: TextStyle(
-                      fontFamily: 'Brick Sans',
                       fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF2D2D2D),
@@ -259,7 +246,6 @@ class _ModalButton extends StatelessWidget {
               : Text(
                   label,
                   style: TextStyle(
-                    fontFamily: 'Brick Sans',
                     fontSize: 13,
                     color: filled ? const Color(0xFFFFFBF0) : const Color(0xFF2D2D2D),
                     letterSpacing: 1.5,
@@ -308,7 +294,6 @@ class _SocialButton extends StatelessWidget {
               : Text(
                   label,
                   style: const TextStyle(
-                    fontFamily: 'Brick Sans',
                     fontSize: 13,
                     color: Color(0xFF1A1A2E),
                     letterSpacing: 1.5,
@@ -348,7 +333,6 @@ class _GuestButton extends StatelessWidget {
         child: Text(
           'Continuar sin cuenta →',
           style: TextStyle(
-            fontFamily: 'Brick Sans',
             fontSize: 12,
             color: const Color(0xFFFFFBF0).withValues(alpha: 0.55),
             letterSpacing: 1,
@@ -367,6 +351,10 @@ class _GuestWarningDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = style.mode.isDark as bool;
+    final textColor = isDark ? const Color(0xFFFFFBF0) : const Color(0xFF2D2D2D);
+    final subtitleColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF555555);
+
     return Dialog(
       backgroundColor: Colors.transparent,
       child: ConstrainedBox(
@@ -379,26 +367,24 @@ class _GuestWarningDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.person_outline_rounded, size: 36, color: Color(0xFF2D2D2D)),
+                Icon(Icons.person_outline_rounded, size: 36, color: textColor),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'MODO SIN CUENTA',
                   style: TextStyle(
-                    fontFamily: 'Brick Sans',
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2D2D2D),
+                    color: textColor,
                     letterSpacing: 1.5,
                   ),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 12),
-                const Text(
+                Text(
                   'Tu progreso se guardará únicamente en este dispositivo.\n\nSi lo desinstalás o cambiás de teléfono, se perderá.',
                   style: TextStyle(
-                    fontFamily: 'Brick Sans',
                     fontSize: 12,
-                    color: Color(0xFF555555),
+                    color: subtitleColor,
                     height: 1.6,
                   ),
                   textAlign: TextAlign.center,
@@ -410,16 +396,15 @@ class _GuestWarningDialog extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF2D2D2D),
+                      color: textColor,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
+                    child: Text(
                       'ENTENDIDO, CONTINUAR',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Brick Sans',
                         fontSize: 13,
-                        color: Color(0xFFFFFBF0),
+                        color: isDark ? const Color(0xFF1C1C2E) : const Color(0xFFFFFBF0),
                         letterSpacing: 1,
                       ),
                     ),
@@ -432,16 +417,15 @@ class _GuestWarningDialog extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: const Color(0xFF2D2D2D), width: 2),
+                      border: Border.all(color: textColor, width: 2),
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    child: const Text(
+                    child: Text(
                       'VOLVER',
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        fontFamily: 'Brick Sans',
                         fontSize: 13,
-                        color: Color(0xFF2D2D2D),
+                        color: textColor,
                         letterSpacing: 1,
                       ),
                     ),

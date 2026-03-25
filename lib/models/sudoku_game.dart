@@ -3,12 +3,14 @@ class SudokuGame {
   final List<List<int>> solutionGrid;
   final String difficultyLevel;
   final List<List<int>> hintsCoordinates;
+  final int? puzzleId;
 
   SudokuGame({
     required this.playableGrid,
     required this.solutionGrid,
     required this.difficultyLevel,
     required this.hintsCoordinates,
+    this.puzzleId,
   });
 
   factory SudokuGame.empty() {
@@ -36,6 +38,7 @@ class SudokuGame {
         json['metadata']['hints_coordinates']?.map((c) => List<int>.from(c)) ??
             [],
       ),
+      puzzleId: json['metadata']['puzzle_id'] as int?,
     );
   }
 }

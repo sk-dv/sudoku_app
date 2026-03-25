@@ -14,6 +14,7 @@ class GameProgress {
   final DateTime savedAt;
   final List<(int, int)> hintCoordinates;
   final List<List<int>> solutionGrid;
+  final int? puzzleId;
 
   const GameProgress({
     required this.id,
@@ -25,6 +26,7 @@ class GameProgress {
     required this.savedAt,
     required this.hintCoordinates,
     required this.solutionGrid,
+    this.puzzleId,
   });
 
   Map<String, dynamic> toMap() {
@@ -73,6 +75,7 @@ class GameProgress {
       savedAt: DateTime.now(),
       hintCoordinates: game.model.hintsCoordinates,
       solutionGrid: game.model.solutionGrid,
+      puzzleId: game.model.puzzleId,
     );
   }
 

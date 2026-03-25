@@ -54,7 +54,6 @@ class NumberPreview extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: textColor,
-                        fontFamily: 'Brick Sans',
                         decoration: TextDecoration.none,
                       ),
                     ),

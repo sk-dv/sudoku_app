@@ -44,11 +44,11 @@ class FloatingCard extends StatelessWidget {
             child: Container(
               decoration: BoxDecoration(
                 color: isDark
-                    ? const Color(0xFF1C1C2E)
+                    ? Colors.white.withValues(alpha: 0.06)
                     : Colors.white,
                 border: Border.all(
                   color: isDark
-                      ? Colors.white.withValues(alpha: 0.07)
+                      ? Colors.white.withValues(alpha: 0.1)
                       : Colors.black.withValues(alpha: 0.07),
                   width: 1,
                 ),

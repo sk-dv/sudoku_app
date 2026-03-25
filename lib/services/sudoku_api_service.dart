@@ -114,6 +114,50 @@ class SudokuApiService {
     }
   }
 
+  /// Guarda el progreso de una partida en el backend (requiere sesión activa).
+  static Future<void> saveProgress({
+    required int puzzleId,
+    required List<List<int>> currentState,
+    required int timeElapsed,
+    required int hintsUsed,
+    required bool completed,
+  }) async {
+    final token = await AuthService.instance.getIdToken();
+    if (token == null) return;
+
+    await http.post(
+      Uri.parse('$baseUrl/progress/save'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'puzzle_id': puzzleId,
+        'current_state': currentState,
+        'time_elapsed': timeElapsed,
+        'hints_used': hintsUsed,
+        'completed': completed,
+      }),
+    );
+  }
+
+  /// Obtiene las estadísticas del usuario autenticado.
+  static Future<Map<String, dynamic>?> getUserStats() async {
+    final token = await AuthService.instance.getIdToken();
+    if (token == null) return null;
+
+    final response = await http.get(
+      Uri.parse('$baseUrl/user/stats'),
+      headers: {'Authorization': 'Bearer $token'},
+    );
+
+    if (response.statusCode == 200) {
+      final body = json.decode(response.body);
+      return body['data']['stats'] as Map<String, dynamic>?;
+    }
+    return null;
+  }
+
   /// Obtiene estadísticas de puzzles disponibles
   Future<Map<String, dynamic>> getStats() async {
     final response = await http.get(Uri.parse('$baseUrl/stats'));

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sudoku_app/cubit/auth_cubit.dart';
 import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
@@ -17,6 +18,7 @@ class _StatsScreenState extends State<StatsScreen> {
   final SudokuApiService _apiService = SudokuApiService();
   Map<String, dynamic>? _stats;
   Map<String, int>? _boardsSummary;
+  Map<String, dynamic>? _userStats;
   bool _isLoading = true;
 
   @override
@@ -27,12 +29,14 @@ class _StatsScreenState extends State<StatsScreen> {
 
   Future<void> _loadStats() async {
     try {
-      final stats = await _apiService.getStats();
+      final serverStats = await _apiService.getStats();
+      final userStats = await SudokuApiService.getUserStats();
 
       if (mounted) {
         setState(() {
-          _stats = stats;
-          _boardsSummary = Map<String, int>.from(stats['boards'] ?? {});
+          _stats = serverStats;
+          _boardsSummary = Map<String, int>.from(serverStats['boards'] ?? {});
+          _userStats = userStats;
           _isLoading = false;
         });
       }
@@ -78,6 +82,12 @@ class _StatsScreenState extends State<StatsScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
+                        if (_userStats != null &&
+                            context.read<AuthCubit>().state is AuthAuthenticated)
+                          _UserStatsCard(stats: _userStats!),
+                        if (_userStats != null &&
+                            context.read<AuthCubit>().state is AuthAuthenticated)
+                          const SizedBox(height: 20),
                         FloatingCard(
                           padding: const EdgeInsets.all(20),
                           child: BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
@@ -98,7 +108,6 @@ class _StatsScreenState extends State<StatsScreen> {
                                               style: TextStyle(
                                                 fontSize: 11,
                                                 color: textColor.withValues(alpha: 0.5),
-                                                fontFamily: 'Brick Sans',
                                                 letterSpacing: 2,
                                               ),
                                             ),
@@ -108,7 +117,6 @@ class _StatsScreenState extends State<StatsScreen> {
                                               style: TextStyle(
                                                 fontSize: 48,
                                                 color: accentColor,
-                                                fontFamily: 'Brick Sans',
                                                 fontWeight: FontWeight.bold,
                                                 letterSpacing: 2,
                                                 height: 1,
@@ -140,7 +148,6 @@ class _StatsScreenState extends State<StatsScreen> {
                                     style: TextStyle(
                                       fontSize: 13,
                                       color: color.withValues(alpha: 0.6),
-                                      fontFamily: 'Brick Sans',
                                       letterSpacing: 2,
                                     ),
                                   );
@@ -222,7 +229,6 @@ class _StatsScreenState extends State<StatsScreen> {
                                     style: TextStyle(
                                       fontSize: 10,
                                       color: color.withValues(alpha: 0.7),
-                                      fontFamily: 'Brick Sans',
                                       letterSpacing: 1,
                                       height: 1.5,
                                     ),
@@ -239,6 +245,113 @@ class _StatsScreenState extends State<StatsScreen> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _UserStatsCard extends StatelessWidget {
+  const _UserStatsCard({required this.stats});
+  final Map<String, dynamic> stats;
+
+  @override
+  Widget build(BuildContext context) {
+    final accentColor = context.read<SudokuGameCubit>().state.style.selectedCell;
+    final textColor = context.read<SudokuGameCubit>().state.style.borderColor;
+    final gamesPlayed = stats['games_played'] ?? 0;
+    final gamesCompleted = stats['games_completed'] ?? 0;
+    final streak = stats['current_streak'] ?? 0;
+    final bestStreak = stats['best_streak'] ?? 0;
+    final bestTimes = Map<String, dynamic>.from(stats['best_times'] ?? {});
+
+    return FloatingCard(
+      padding: const EdgeInsets.all(20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'TUS ESTADÍSTICAS',
+            style: TextStyle(
+              fontSize: 11,
+              color: textColor.withValues(alpha: 0.5),
+              letterSpacing: 2,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              _StatItem(label: 'JUGADAS', value: '$gamesPlayed', color: accentColor),
+              const SizedBox(width: 24),
+              _StatItem(label: 'COMPLETADAS', value: '$gamesCompleted', color: accentColor),
+              const SizedBox(width: 24),
+              _StatItem(label: 'RACHA', value: '$streak', color: accentColor),
+              const SizedBox(width: 24),
+              _StatItem(label: 'MEJOR RACHA', value: '$bestStreak', color: accentColor),
+            ],
+          ),
+          if (bestTimes.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Text(
+              'MEJORES TIEMPOS',
+              style: TextStyle(
+                fontSize: 10,
+                color: textColor.withValues(alpha: 0.4),
+                letterSpacing: 2,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              children: bestTimes.entries.map((e) {
+                final secs = e.value as int;
+                final mins = secs ~/ 60;
+                final s = secs % 60;
+                return Text(
+                  '${e.key}: ${mins}m ${s}s',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: accentColor,
+                    letterSpacing: 1,
+                  ),
+                );
+              }).toList(),
+            ),
+          ],
+        ],
+      ),
+    );
+  }
+}
+
+class _StatItem extends StatelessWidget {
+  const _StatItem({required this.label, required this.value, required this.color});
+  final String label;
+  final String value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 28,
+            color: color,
+            fontWeight: FontWeight.bold,
+            height: 1,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 9,
+            color: color.withValues(alpha: 0.6),
+            letterSpacing: 1,
+          ),
+        ),
+      ],
     );
   }
 }
@@ -272,7 +385,6 @@ class _DifficultyBar extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 color: color,
-                fontFamily: 'Brick Sans',
                 letterSpacing: 1,
                 fontWeight: FontWeight.bold,
               ),
@@ -282,7 +394,6 @@ class _DifficultyBar extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 color: color,
-                fontFamily: 'Brick Sans',
                 fontWeight: FontWeight.bold,
               ),
             ),

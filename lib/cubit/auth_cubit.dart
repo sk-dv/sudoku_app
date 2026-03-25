@@ -4,6 +4,19 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/services/auth_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 
+String _friendlyAuthError(FirebaseAuthException e) {
+  switch (e.code) {
+    case 'account-exists-with-different-credential':
+      return 'Ya existe una cuenta con este email. Prueba iniciar sesión con otro método.';
+    case 'user-disabled':
+      return 'Esta cuenta ha sido deshabilitada.';
+    case 'network-request-failed':
+      return 'Sin conexión. Verifica tu internet e intenta de nuevo.';
+    default:
+      return e.message ?? 'Error de autenticación. Intenta de nuevo.';
+  }
+}
+
 // ─── States ───────────────────────────────────────────────────────────────────
 
 abstract class AuthState extends Equatable {
@@ -66,8 +79,15 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final result = await _authService.signInWithGoogle();
       _registerAndEmit(result.user!);
+    } on FirebaseAuthException catch (e) {
+      emit(AuthError(message: _friendlyAuthError(e)));
     } on Exception catch (e) {
-      emit(AuthError(message: e.toString().replaceFirst('Exception: ', '')));
+      final msg = e.toString();
+      if (msg.contains('canceled') || msg.contains('cancelled') || msg.contains('popup-closed')) {
+        emit(const AuthInitial());
+      } else {
+        emit(const AuthError(message: 'Inicio cancelado o fallido. Intenta de nuevo.'));
+      }
     }
   }
 
@@ -76,8 +96,15 @@ class AuthCubit extends Cubit<AuthState> {
     try {
       final result = await _authService.signInWithApple();
       _registerAndEmit(result.user!);
+    } on FirebaseAuthException catch (e) {
+      emit(AuthError(message: _friendlyAuthError(e)));
     } on Exception catch (e) {
-      emit(AuthError(message: e.toString().replaceFirst('Exception: ', '')));
+      final msg = e.toString();
+      if (msg.contains('canceled') || msg.contains('cancelled') || msg.contains('AuthorizationErrorCode.canceled')) {
+        emit(const AuthInitial());
+      } else {
+        emit(const AuthError(message: 'Inicio cancelado o fallido. Intenta de nuevo.'));
+      }
     }
   }
 

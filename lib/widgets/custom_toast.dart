@@ -108,7 +108,6 @@ class _CustomToastState extends State<_CustomToast>
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                           color: style.background,
-                          fontFamily: 'Brick Sans',
                           letterSpacing: 1.5,
                           decoration: TextDecoration.none),
                     ),

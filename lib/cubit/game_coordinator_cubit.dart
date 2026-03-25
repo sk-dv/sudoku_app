@@ -4,7 +4,9 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/models/game_progress.dart';
 import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/screens/level_selection_screen.dart';
+import 'package:sudoku_app/services/auth_service.dart';
 import 'package:sudoku_app/services/game_save_service.dart';
+import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/services/timer_service.dart';
 
 class GameCoordinatorState extends Equatable {
@@ -12,12 +14,14 @@ class GameCoordinatorState extends Equatable {
   final int hintIndex;
   final DifficultLevel? difficulty;
   final bool isPlaying;
+  final GameSource gameSource;
 
   const GameCoordinatorState({
     this.elapsedSeconds = 0,
     this.hintIndex = 0,
     this.difficulty,
     this.isPlaying = false,
+    this.gameSource = GameSource.level,
   });
 
   GameCoordinatorState copyWith({
@@ -25,12 +29,14 @@ class GameCoordinatorState extends Equatable {
     int? hintIndex,
     DifficultLevel? difficulty,
     bool? isPlaying,
+    GameSource? gameSource,
   }) {
     return GameCoordinatorState(
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
       hintIndex: hintIndex ?? this.hintIndex,
       difficulty: difficulty ?? this.difficulty,
       isPlaying: isPlaying ?? this.isPlaying,
+      gameSource: gameSource ?? this.gameSource,
     );
   }
 
@@ -46,7 +52,7 @@ class GameCoordinatorState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [elapsedSeconds, hintIndex, difficulty, isPlaying];
+  List<Object?> get props => [elapsedSeconds, hintIndex, difficulty, isPlaying, gameSource];
 }
 
 class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
@@ -59,13 +65,14 @@ class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
     });
   }
 
-  void startGame(DifficultLevel difficulty) {
+  void startGame(DifficultLevel difficulty, {GameSource source = GameSource.level}) {
     _timerService.stop();
     emit(state.copyWith(
       difficulty: difficulty,
       hintIndex: 0,
       elapsedSeconds: 0,
       isPlaying: true,
+      gameSource: source,
     ));
     _timerService.start();
   }
@@ -100,8 +107,7 @@ class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
     emit(state.copyWith(hintIndex: state.hintIndex + 1));
   }
 
-  Future<void> saveGame(SudokuGameModel model, GameSource source) async {
-    // Delete previous save to ensure only one exists
+  Future<void> saveGame(SudokuGameModel model, GameSource source, {bool completed = false}) async {
     await GameSaveService.deleteAllSavedGames();
 
     final progress = GameProgress.fromGameModel(SavedGame(
@@ -111,6 +117,17 @@ class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
       elapsedSeconds: state.elapsedSeconds,
     ));
     await GameSaveService.saveGame(progress);
+
+    final puzzleId = progress.puzzleId;
+    if (puzzleId != null && AuthService.instance.currentUser != null) {
+      SudokuApiService.saveProgress(
+        puzzleId: puzzleId,
+        currentState: progress.board,
+        timeElapsed: progress.timeElapsed,
+        hintsUsed: progress.hintIdx,
+        completed: completed,
+      ).catchError((_) {});
+    }
   }
 
   @override

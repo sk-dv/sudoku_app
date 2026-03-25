@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:sudoku_app/cubit/auth_cubit.dart';
 import 'package:sudoku_app/models/context_utils.dart';
+import 'package:sudoku_app/models/game_progress.dart';
 import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/screens/level_selection_screen.dart';
+import 'package:sudoku_app/services/daily_progress_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/navigation_cubit.dart';
@@ -19,6 +22,20 @@ class DailyPuzzleScreen extends StatefulWidget {
 
 class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
   String? _selectedDifficulty;
+  int? _userStreak;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStreak();
+  }
+
+  Future<void> _loadStreak() async {
+    final stats = await SudokuApiService.getUserStats();
+    if (mounted && stats != null) {
+      setState(() => _userStreak = stats['current_streak'] as int?);
+    }
+  }
 
   void _onDifficultySelected(String difficulty) {
     setState(() => _selectedDifficulty = difficulty);
@@ -69,13 +86,37 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
                               style: TextStyle(
                                 fontSize: 14,
                                 color: color,
-                                fontFamily: 'Brick Sans',
                                 letterSpacing: 2,
                                 fontWeight: FontWeight.bold,
                               ),
                             );
                           },
                         ),
+                        if (_userStreak != null && _userStreak! > 0 &&
+                            context.read<AuthCubit>().state is AuthAuthenticated) ...[
+                          const SizedBox(height: 12),
+                          BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
+                            selector: (state) => state.style.selectedCell,
+                            builder: (context, color) {
+                              return Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Icon(Icons.local_fire_department_rounded, color: color, size: 16),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'RACHA: $_userStreak',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: color,
+                                      letterSpacing: 2,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ],
                       ],
                     ),
                   ),
@@ -89,7 +130,6 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
                         style: TextStyle(
                           fontSize: 16,
                           color: color,
-                          fontFamily: 'Brick Sans',
                           letterSpacing: 3,
                           fontWeight: FontWeight.bold,
                         ),
@@ -169,7 +209,9 @@ class _DailyDifficultyCard extends StatelessWidget {
 
   bool get isSelected => selected == difficulty.level;
 
-  bool get isDisabled => selected != null && selected != difficulty.level;
+  bool get isCompletedToday => DailyProgressService.isCompleted(difficulty.level);
+
+  bool get isDisabled => (selected != null && selected != difficulty.level) || isCompletedToday;
 
   @override
   Widget build(BuildContext context) {
@@ -198,7 +240,7 @@ class _DailyDifficultyCard extends StatelessWidget {
               cubit.play(difficulty, gameModel);
 
               if (context.mounted) {
-                context.read<GameCoordinatorCubit>().startGame(difficulty);
+                context.read<GameCoordinatorCubit>().startGame(difficulty, source: GameSource.daily);
                 context.read<NavigationCubit>().goToGame(difficulty, gameModel);
               }
             },
@@ -235,13 +277,30 @@ class _DailyDifficultyCard extends StatelessWidget {
                   style: TextStyle(
                     color: effectiveColor,
                     fontSize: 15,
-                    fontFamily: 'Brick Sans',
                     letterSpacing: 2,
                     fontWeight: isSelected ? FontWeight.w900 : FontWeight.bold,
                   ),
                 ),
               ),
-              if (!isDisabled)
+              if (isCompletedToday)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: effectiveColor.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: effectiveColor, width: 1.5),
+                  ),
+                  child: Text(
+                    'COMPLETADO',
+                    style: TextStyle(
+                      fontSize: 9,
+                      color: effectiveColor,
+                      letterSpacing: 1,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                )
+              else if (!isDisabled)
                 Icon(
                   Icons.arrow_forward_ios_rounded,
                   color: effectiveColor,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/cubit/auth_cubit.dart';
@@ -31,9 +32,10 @@ class Sudoku extends StatelessWidget {
         BlocProvider(create: (_) => GameCoordinatorCubit()),
         BlocProvider(create: (_) => AuthCubit(AuthService.instance)),
       ],
-      child: const MaterialApp(
+      child: MaterialApp(
         debugShowCheckedModeBanner: false,
-        home: ShellNavigation(),
+        theme: ThemeData(textTheme: GoogleFonts.dotGothic16TextTheme()),
+        home: const ShellNavigation(),
       ),
     );
   }
@@ -156,7 +158,6 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
                         fontSize: 16,
                         fontWeight: FontWeight.bold,
                         color: gameState.style.selectedCell,
-                        fontFamily: 'Brick Sans',
                         letterSpacing: 1,
                       ),
                     ),
@@ -172,10 +173,15 @@ class _AppBar extends StatelessWidget implements PreferredSizeWidget {
             child: const _SymbolButton(),
           ),
         ],
-        if (navState.route.isMenu) _UserAvatar(authState: authState),
-        ShadowIcon(
-          icon: gameState.style.themeIcon,
-          onPressed: context.read<SudokuGameCubit>().changeMode,
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            if (navState.route.isMenu) _UserAvatar(authState: authState),
+            ShadowIcon(
+              icon: gameState.style.themeIcon,
+              onPressed: context.read<SudokuGameCubit>().changeMode,
+            ),
+          ],
         ),
       ],
     );
@@ -236,7 +242,6 @@ class _UserAvatar extends StatelessWidget {
           fontSize: 15,
           fontWeight: FontWeight.bold,
           color: Color(0xFFFFFBF0),
-          fontFamily: 'Brick Sans',
         ),
       );
     }
@@ -249,11 +254,9 @@ class _UserAvatar extends StatelessWidget {
       builder: (_) => AlertDialog(
         title: Text(
           user.displayName,
-          style: const TextStyle(fontFamily: 'Brick Sans'),
         ),
         content: Text(
           user.email,
-          style: const TextStyle(fontFamily: 'Brick Sans', fontSize: 13),
         ),
         actions: [
           TextButton(
@@ -264,7 +267,6 @@ class _UserAvatar extends StatelessWidget {
             child: const Text(
               'Cerrar sesión',
               style: TextStyle(
-                fontFamily: 'Brick Sans',
                 color: Color(0xFFFF5E5B),
               ),
             ),
@@ -273,7 +275,6 @@ class _UserAvatar extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Cancelar',
-              style: TextStyle(fontFamily: 'Brick Sans'),
             ),
           ),
         ],
@@ -287,11 +288,9 @@ class _UserAvatar extends StatelessWidget {
       builder: (_) => AlertDialog(
         title: const Text(
           'Modo invitado',
-          style: TextStyle(fontFamily: 'Brick Sans'),
         ),
         content: const Text(
           'Inicia sesión con Google para guardar tu progreso en la nube y ver tus estadísticas.',
-          style: TextStyle(fontFamily: 'Brick Sans', fontSize: 13),
         ),
         actions: [
           TextButton(
@@ -302,7 +301,6 @@ class _UserAvatar extends StatelessWidget {
             child: const Text(
               'Iniciar sesión',
               style: TextStyle(
-                fontFamily: 'Brick Sans',
                 color: Color(0xFF4A90E2),
               ),
             ),
@@ -311,7 +309,6 @@ class _UserAvatar extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'Seguir como invitado',
-              style: TextStyle(fontFamily: 'Brick Sans'),
             ),
           ),
         ],
@@ -351,7 +348,6 @@ class _SymbolButton extends StatelessWidget {
                         fontSize: 14,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFFFFFBF0),
-                        fontFamily: 'Brick Sans',
                       ),
                     )
                   : Padding(
