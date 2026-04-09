@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/cubit/auth_cubit.dart';
 import 'package:sudoku_app/models/context_utils.dart';
 import 'package:sudoku_app/screens/login_screen.dart';
 import 'package:sudoku_app/services/auth_service.dart';
+import 'package:sudoku_app/theme/app_theme.dart';
 
 import 'package:sudoku_app/menu_screen.dart';
 import 'package:sudoku_app/game_background.dart';
@@ -32,10 +32,16 @@ class Sudoku extends StatelessWidget {
         BlocProvider(create: (_) => GameCoordinatorCubit()),
         BlocProvider(create: (_) => AuthCubit(AuthService.instance)),
       ],
-      child: MaterialApp(
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(textTheme: GoogleFonts.dotGothic16TextTheme()),
-        home: const ShellNavigation(),
+      child: BlocBuilder<SudokuGameCubit, SudokuGameState>(
+        builder: (context, gameState) {
+          return MaterialApp(
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.light(),
+            darkTheme: AppTheme.dark(),
+            themeMode: gameState.style.mode.isDark ? ThemeMode.dark : ThemeMode.light,
+            home: const ShellNavigation(),
+          );
+        },
       ),
     );
   }

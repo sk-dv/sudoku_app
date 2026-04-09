@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/cubit/auth_cubit.dart';
 import 'package:sudoku_app/sudoku_game_cubit.dart';
+import 'package:sudoku_app/theme/app_theme.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
 import 'package:sudoku_app/widgets/pixelated_background.dart';
 import 'package:sudoku_app/widgets/shadow_button.dart';
@@ -12,8 +13,6 @@ class LoginScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final style = context.read<SudokuGameCubit>().state.style;
-
     return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
         if (state is AuthError) {
@@ -26,32 +25,55 @@ class LoginScreen extends StatelessWidget {
           context.read<AuthCubit>().clearError();
         }
       },
-      child: Scaffold(
-        backgroundColor: Colors.transparent,
-        body: Stack(
-          children: [
-            PixelatedBackground(
-              primaryColor: style.topBackground,
-              secondaryColor: style.bottomBackground,
-              stop: false,
-              child: const SizedBox.expand(),
-            ),
-            SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 32),
-                child: Column(
-                  children: [
-                    const Spacer(flex: 3),
-                    _PixelLogo(style: style),
-                    const Spacer(flex: 4),
-                    _AuthButtons(style: style),
-                    const SizedBox(height: 40),
-                  ],
+      child: BlocBuilder<SudokuGameCubit, SudokuGameState>(
+        builder: (context, gameState) {
+          final style = gameState.style;
+          final isDark = style.mode.isDark;
+
+          return Scaffold(
+            backgroundColor: Colors.transparent,
+            body: Stack(
+              children: [
+                PixelatedBackground(
+                  primaryColor:
+                      isDark ? AppColors.loginDarkTop : AppColors.loginLightTop,
+                  secondaryColor: isDark
+                      ? AppColors.loginDarkBottom
+                      : AppColors.loginLightBottom,
+                  stop: false,
+                  child: const SizedBox.expand(),
                 ),
-              ),
+                SafeArea(
+                  child: Stack(
+                    children: [
+                      // ── Toggle dark/light ─────────────────────────────────
+                      Positioned(
+                        top: 8,
+                        right: 16,
+                        child: _ThemeToggleButton(isDark: isDark),
+                      ),
+                      // ── Contenido principal ───────────────────────────────
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          const Spacer(flex: 3),
+                          _PixelLogo(isDark: isDark),
+                          const Spacer(flex: 4),
+                          Padding(
+                            padding:
+                                const EdgeInsets.symmetric(horizontal: 24),
+                            child: _AuthButtons(style: style),
+                          ),
+                          const SizedBox(height: 48),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       ),
     );
   }
@@ -60,33 +82,76 @@ class LoginScreen extends StatelessWidget {
 // ─── Logo ─────────────────────────────────────────────────────────────────────
 
 class _PixelLogo extends StatelessWidget {
-  const _PixelLogo({required this.style});
-  final dynamic style;
+  const _PixelLogo({required this.isDark});
+  final bool isDark;
 
   @override
   Widget build(BuildContext context) {
+    final titleColor = isDark ? const Color(0xFFFFFBF0) : const Color(0xFF1A1A2E);
+    final shadowColor = isDark
+        ? Colors.black.withValues(alpha: 0.5)
+        : Colors.black.withValues(alpha: 0.18);
+
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Text(
           'SUDOKU',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 64,
-            color: const Color(0xFFFFFBF0),
-            letterSpacing: 6,
-            shadows: [Shadow(color: Colors.black.withValues(alpha: 0.5), offset: const Offset(5, 5))],
+            fontFamily: 'BrickSans',
+            fontSize: 56,
+            color: titleColor,
+            letterSpacing: 4,
+            shadows: [Shadow(color: shadowColor, offset: const Offset(4, 4))],
           ),
         ),
-        const SizedBox(height: 4),
+        const SizedBox(height: 6),
         Text(
           '8 B I T',
+          textAlign: TextAlign.center,
           style: TextStyle(
-            fontSize: 28,
-            color: const Color(0xFFFFC759),
-            letterSpacing: 12,
-            shadows: [Shadow(color: Colors.black.withValues(alpha: 0.4), offset: const Offset(3, 3))],
+            fontFamily: 'BrickSans',
+            fontSize: 24,
+            color: AppColors.accent,
+            letterSpacing: 10,
+            shadows: [Shadow(color: shadowColor, offset: const Offset(3, 3))],
           ),
         ),
       ],
+    );
+  }
+}
+
+// ─── Toggle dark / light ──────────────────────────────────────────────────────
+
+class _ThemeToggleButton extends StatelessWidget {
+  const _ThemeToggleButton({required this.isDark});
+  final bool isDark;
+
+  @override
+  Widget build(BuildContext context) {
+    final iconColor = isDark
+        ? const Color(0xFFFFFBF0).withValues(alpha: 0.7)
+        : const Color(0xFF1A1A2E).withValues(alpha: 0.6);
+
+    return GestureDetector(
+      onTap: () => context.read<SudokuGameCubit>().changeMode(),
+      child: Container(
+        width: 40,
+        height: 40,
+        decoration: BoxDecoration(
+          color: isDark
+              ? Colors.white.withValues(alpha: 0.08)
+              : Colors.black.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(12),
+        ),
+        child: Icon(
+          isDark ? Icons.light_mode_outlined : Icons.dark_mode_outlined,
+          size: 20,
+          color: iconColor,
+        ),
+      ),
     );
   }
 }
@@ -169,14 +234,12 @@ class _AuthModalSheet extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 20),
-                  const Text(
+                  Text(
                     'INICIAR SESIÓN',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2D2D2D),
-                      letterSpacing: 2,
-                    ),
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 2,
+                        ),
                   ),
                   const SizedBox(height: 24),
                   _ModalButton(
@@ -219,38 +282,35 @@ class _ModalButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final bgColor = filled
+        ? (isLoading ? cs.primary.withValues(alpha: 0.5) : cs.primary)
+        : Colors.transparent;
+    final fgColor = filled ? cs.onPrimary : cs.onSurface;
+
     return GestureDetector(
       onTap: isLoading ? null : onPressed,
       child: Container(
         width: double.infinity,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: filled
-              ? (isLoading
-                  ? const Color(0xFF2D2D2D).withValues(alpha: 0.5)
-                  : const Color(0xFF2D2D2D))
-              : Colors.transparent,
-          border: filled ? null : Border.all(color: const Color(0xFF2D2D2D), width: 2),
+          color: bgColor,
+          border: filled ? null : Border.all(color: cs.onSurface, width: 1.5),
           borderRadius: BorderRadius.circular(12),
         ),
         child: Center(
           child: isLoading && filled
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(
-                    strokeWidth: 2,
-                    color: Color(0xFFFFFBF0),
-                  ),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: fgColor),
                 )
               : Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 13,
-                    color: filled ? const Color(0xFFFFFBF0) : const Color(0xFF2D2D2D),
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: fgColor,
+                        letterSpacing: 1.5,
+                      ),
                 ),
         ),
       ),
@@ -269,36 +329,36 @@ class _SocialButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final btnBg = isLoading ? cs.primary.withValues(alpha: 0.15) : cs.primary;
+    final btnFg = cs.onPrimary;
+
     return ShadowButton(
       containerSize: const (340, 56),
-      shadowColor: Colors.black.withValues(alpha: 0.6),
+      shadowColor: Colors.black.withValues(alpha: 0.5),
       shadowOffset: const Offset(4, 4),
-      radius: 12,
+      radius: 14,
       restSpace: 5,
       pressedSpace: 2,
       onPressed: isLoading ? () {} : onPressed,
       child: Container(
         decoration: BoxDecoration(
-          color: isLoading
-              ? const Color(0xFFFFFBF0).withValues(alpha: 0.15)
-              : const Color(0xFFFFFBF0),
-          borderRadius: BorderRadius.circular(12),
+          color: btnBg,
+          borderRadius: BorderRadius.circular(14),
         ),
         child: Center(
           child: isLoading
-              ? const SizedBox(
+              ? SizedBox(
                   width: 20,
                   height: 20,
-                  child: CircularProgressIndicator(strokeWidth: 2, color: Color(0xFF2D2D2D)),
+                  child: CircularProgressIndicator(strokeWidth: 2, color: btnFg),
                 )
               : Text(
                   label,
-                  style: const TextStyle(
-                    fontSize: 13,
-                    color: Color(0xFF1A1A2E),
-                    letterSpacing: 1.5,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                        color: btnFg,
+                        letterSpacing: 1.5,
+                      ),
                 ),
         ),
       ),
@@ -332,11 +392,7 @@ class _GuestButton extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 14),
         child: Text(
           'Continuar sin cuenta →',
-          style: TextStyle(
-            fontSize: 12,
-            color: const Color(0xFFFFFBF0).withValues(alpha: 0.55),
-            letterSpacing: 1,
-          ),
+          style: Theme.of(context).textTheme.bodySmall?.copyWith(letterSpacing: 0.8),
         ),
       ),
     );
@@ -351,9 +407,8 @@ class _GuestWarningDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = style.mode.isDark as bool;
-    final textColor = isDark ? const Color(0xFFFFFBF0) : const Color(0xFF2D2D2D);
-    final subtitleColor = isDark ? const Color(0xFFAAAAAA) : const Color(0xFF555555);
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
 
     return Dialog(
       backgroundColor: Colors.transparent,
@@ -367,14 +422,12 @@ class _GuestWarningDialog extends StatelessWidget {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.person_outline_rounded, size: 36, color: textColor),
+                Icon(Icons.person_outline_rounded, size: 36, color: cs.onSurface),
                 const SizedBox(height: 12),
                 Text(
                   'MODO SIN CUENTA',
-                  style: TextStyle(
-                    fontSize: 14,
+                  style: tt.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: textColor,
                     letterSpacing: 1.5,
                   ),
                   textAlign: TextAlign.center,
@@ -382,11 +435,7 @@ class _GuestWarningDialog extends StatelessWidget {
                 const SizedBox(height: 12),
                 Text(
                   'Tu progreso se guardará únicamente en este dispositivo.\n\nSi lo desinstalás o cambiás de teléfono, se perderá.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: subtitleColor,
-                    height: 1.6,
-                  ),
+                  style: tt.bodySmall?.copyWith(height: 1.6),
                   textAlign: TextAlign.center,
                 ),
                 const SizedBox(height: 20),
@@ -396,16 +445,16 @@ class _GuestWarningDialog extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      color: textColor,
+                      color: cs.primary,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'ENTENDIDO, CONTINUAR',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: isDark ? const Color(0xFF1C1C2E) : const Color(0xFFFFFBF0),
+                      style: tt.labelMedium?.copyWith(
+                        color: cs.onPrimary,
                         letterSpacing: 1,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),
@@ -417,16 +466,16 @@ class _GuestWarningDialog extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.symmetric(vertical: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: textColor, width: 2),
+                      border: Border.all(color: cs.onSurface, width: 1.5),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
                       'VOLVER',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 13,
-                        color: textColor,
+                      style: tt.labelMedium?.copyWith(
+                        color: cs.onSurface,
                         letterSpacing: 1,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                   ),

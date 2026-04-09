@@ -17,7 +17,7 @@ class VictoryDialog extends StatelessWidget {
       child: BlocBuilder<GameCoordinatorCubit, GameCoordinatorState>(
         builder: (context, coordState) {
           if (coordState.gameSource == GameSource.daily && coordState.difficulty != null) {
-            DailyProgressService.saveCompleted(coordState.difficulty!.level);
+            DailyProgressService.saveCompleted(coordState.difficulty!.level, coordState.dailyDate);
           }
           return BlocBuilder<SudokuGameCubit, SudokuGameState>(
             builder: (context, state) {

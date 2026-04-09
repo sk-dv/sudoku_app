@@ -7,18 +7,18 @@ class DailyProgressService {
     await Hive.openBox<bool>(_boxName);
   }
 
-  static String _key(String difficulty) {
-    final now = DateTime.now();
-    return '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}_$difficulty';
+  static String _key(String difficulty, [DateTime? date]) {
+    final d = date ?? DateTime.now();
+    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}_$difficulty';
   }
 
-  static Future<void> saveCompleted(String difficulty) async {
+  static Future<void> saveCompleted(String difficulty, [DateTime? date]) async {
     final box = Hive.box<bool>(_boxName);
-    await box.put(_key(difficulty), true);
+    await box.put(_key(difficulty, date), true);
   }
 
-  static bool isCompleted(String difficulty) {
+  static bool isCompleted(String difficulty, [DateTime? date]) {
     final box = Hive.box<bool>(_boxName);
-    return box.get(_key(difficulty)) ?? false;
+    return box.get(_key(difficulty, date)) ?? false;
   }
 }

@@ -23,6 +23,17 @@ class DailyPuzzleScreen extends StatefulWidget {
 class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
   String? _selectedDifficulty;
   int? _userStreak;
+  DateTime _selectedDate = DateTime.now();
+
+  bool get _isToday {
+    final now = DateTime.now();
+    return _selectedDate.year == now.year &&
+        _selectedDate.month == now.month &&
+        _selectedDate.day == now.day;
+  }
+
+  String get _dateApiString =>
+      '${_selectedDate.year}-${_selectedDate.month.toString().padLeft(2, '0')}-${_selectedDate.day.toString().padLeft(2, '0')}';
 
   @override
   void initState() {
@@ -39,6 +50,22 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
 
   void _onDifficultySelected(String difficulty) {
     setState(() => _selectedDifficulty = difficulty);
+  }
+
+  void _goToPreviousDay() {
+    setState(() {
+      _selectedDifficulty = null;
+      _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+    });
+  }
+
+  void _goToNextDay() {
+    if (!_isToday) {
+      setState(() {
+        _selectedDifficulty = null;
+        _selectedDate = _selectedDate.add(const Duration(days: 1));
+      });
+    }
   }
 
   @override
@@ -81,14 +108,33 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
                         BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
                           selector: (state) => state.style.borderColor,
                           builder: (context, color) {
-                            return Text(
-                              _getCurrentDate(),
-                              style: TextStyle(
-                                fontSize: 14,
-                                color: color,
-                                letterSpacing: 2,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            return Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                GestureDetector(
+                                  onTap: _goToPreviousDay,
+                                  child: Icon(Icons.arrow_back_ios_rounded, size: 16, color: color),
+                                ),
+                                const SizedBox(width: 12),
+                                Text(
+                                  _getCurrentDate(),
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: color,
+                                    letterSpacing: 2,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                GestureDetector(
+                                  onTap: _isToday ? null : _goToNextDay,
+                                  child: Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 16,
+                                    color: _isToday ? color.withValues(alpha: 0.25) : color,
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         ),
@@ -140,30 +186,40 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
                   _DailyDifficultyCard(
                     difficulty: DifficultLevel.easy,
                     selected: _selectedDifficulty,
+                    selectedDate: _selectedDate,
+                    dateApiString: _dateApiString,
                     onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
                     difficulty: DifficultLevel.medium,
                     selected: _selectedDifficulty,
+                    selectedDate: _selectedDate,
+                    dateApiString: _dateApiString,
                     onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
                     difficulty: DifficultLevel.hard,
                     selected: _selectedDifficulty,
+                    selectedDate: _selectedDate,
+                    dateApiString: _dateApiString,
                     onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
                     difficulty: DifficultLevel.expert,
                     selected: _selectedDifficulty,
+                    selectedDate: _selectedDate,
+                    dateApiString: _dateApiString,
                     onDifficultySelected: _onDifficultySelected,
                   ),
                   const SizedBox(height: 8),
                   _DailyDifficultyCard(
                     difficulty: DifficultLevel.master,
                     selected: _selectedDifficulty,
+                    selectedDate: _selectedDate,
+                    dateApiString: _dateApiString,
                     onDifficultySelected: _onDifficultySelected,
                   ),
                   SizedBox(height: context.height * 0.11),
@@ -177,22 +233,11 @@ class _DailyPuzzleScreenState extends State<DailyPuzzleScreen> {
   }
 
   String _getCurrentDate() {
-    final now = DateTime.now();
-    final months = [
-      'ENERO',
-      'FEBRERO',
-      'MARZO',
-      'ABRIL',
-      'MAYO',
-      'JUNIO',
-      'JULIO',
-      'AGOSTO',
-      'SEPTIEMBRE',
-      'OCTUBRE',
-      'NOVIEMBRE',
-      'DICIEMBRE'
+    const months = [
+      'ENERO', 'FEBRERO', 'MARZO', 'ABRIL', 'MAYO', 'JUNIO',
+      'JULIO', 'AGOSTO', 'SEPTIEMBRE', 'OCTUBRE', 'NOVIEMBRE', 'DICIEMBRE',
     ];
-    return '${months[now.month - 1]} ${now.day}, ${now.year}';
+    return '${months[_selectedDate.month - 1]} ${_selectedDate.day}, ${_selectedDate.year}';
   }
 }
 
@@ -200,16 +245,20 @@ class _DailyDifficultyCard extends StatelessWidget {
   const _DailyDifficultyCard({
     required this.difficulty,
     required this.selected,
+    required this.selectedDate,
+    required this.dateApiString,
     required this.onDifficultySelected,
   });
 
   final DifficultLevel difficulty;
   final String? selected;
+  final DateTime selectedDate;
+  final String dateApiString;
   final void Function(String) onDifficultySelected;
 
   bool get isSelected => selected == difficulty.level;
 
-  bool get isCompletedToday => DailyProgressService.isCompleted(difficulty.level);
+  bool get isCompletedToday => DailyProgressService.isCompleted(difficulty.level, selectedDate);
 
   bool get isDisabled => (selected != null && selected != difficulty.level) || isCompletedToday;
 
@@ -234,13 +283,18 @@ class _DailyDifficultyCard extends StatelessWidget {
                 difficulty: difficulty,
                 sudokuGame: await SudokuApiService.getDailyGame(
                   difficulty: difficulty.levelMap(),
+                  date: dateApiString,
                 ),
               );
 
               cubit.play(difficulty, gameModel);
 
               if (context.mounted) {
-                context.read<GameCoordinatorCubit>().startGame(difficulty, source: GameSource.daily);
+                context.read<GameCoordinatorCubit>().startGame(
+                  difficulty,
+                  source: GameSource.daily,
+                  dailyDate: selectedDate,
+                );
                 context.read<NavigationCubit>().goToGame(difficulty, gameModel);
               }
             },

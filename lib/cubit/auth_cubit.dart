@@ -6,8 +6,6 @@ import 'package:sudoku_app/services/sudoku_api_service.dart';
 
 String _friendlyAuthError(FirebaseAuthException e) {
   switch (e.code) {
-    case 'account-exists-with-different-credential':
-      return 'Ya existe una cuenta con este email. Prueba iniciar sesión con otro método.';
     case 'user-disabled':
       return 'Esta cuenta ha sido deshabilitada.';
     case 'network-request-failed':
@@ -80,7 +78,11 @@ class AuthCubit extends Cubit<AuthState> {
       final result = await _authService.signInWithGoogle();
       _registerAndEmit(result.user!);
     } on FirebaseAuthException catch (e) {
-      emit(AuthError(message: _friendlyAuthError(e)));
+      if (e.code == 'account-exists-with-different-credential') {
+        emit(const AuthError(message: 'Ya tienes cuenta con Apple para ese email. Usa "Continuar con Apple" para entrar.'));
+      } else {
+        emit(AuthError(message: _friendlyAuthError(e)));
+      }
     } on Exception catch (e) {
       final msg = e.toString();
       if (msg.contains('canceled') || msg.contains('cancelled') || msg.contains('popup-closed')) {
@@ -97,7 +99,11 @@ class AuthCubit extends Cubit<AuthState> {
       final result = await _authService.signInWithApple();
       _registerAndEmit(result.user!);
     } on FirebaseAuthException catch (e) {
-      emit(AuthError(message: _friendlyAuthError(e)));
+      if (e.code == 'account-exists-with-different-credential') {
+        emit(const AuthError(message: 'Ya tienes cuenta con Google para ese email. Usa "Continuar con Google" para entrar.'));
+      } else {
+        emit(AuthError(message: _friendlyAuthError(e)));
+      }
     } on Exception catch (e) {
       final msg = e.toString();
       if (msg.contains('canceled') || msg.contains('cancelled') || msg.contains('AuthorizationErrorCode.canceled')) {

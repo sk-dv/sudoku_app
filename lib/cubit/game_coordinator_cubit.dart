@@ -15,6 +15,7 @@ class GameCoordinatorState extends Equatable {
   final DifficultLevel? difficulty;
   final bool isPlaying;
   final GameSource gameSource;
+  final DateTime? dailyDate;
 
   const GameCoordinatorState({
     this.elapsedSeconds = 0,
@@ -22,6 +23,7 @@ class GameCoordinatorState extends Equatable {
     this.difficulty,
     this.isPlaying = false,
     this.gameSource = GameSource.level,
+    this.dailyDate,
   });
 
   GameCoordinatorState copyWith({
@@ -30,6 +32,8 @@ class GameCoordinatorState extends Equatable {
     DifficultLevel? difficulty,
     bool? isPlaying,
     GameSource? gameSource,
+    DateTime? dailyDate,
+    bool clearDailyDate = false,
   }) {
     return GameCoordinatorState(
       elapsedSeconds: elapsedSeconds ?? this.elapsedSeconds,
@@ -37,6 +41,7 @@ class GameCoordinatorState extends Equatable {
       difficulty: difficulty ?? this.difficulty,
       isPlaying: isPlaying ?? this.isPlaying,
       gameSource: gameSource ?? this.gameSource,
+      dailyDate: clearDailyDate ? null : (dailyDate ?? this.dailyDate),
     );
   }
 
@@ -52,7 +57,7 @@ class GameCoordinatorState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [elapsedSeconds, hintIndex, difficulty, isPlaying, gameSource];
+  List<Object?> get props => [elapsedSeconds, hintIndex, difficulty, isPlaying, gameSource, dailyDate];
 }
 
 class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
@@ -65,7 +70,7 @@ class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
     });
   }
 
-  void startGame(DifficultLevel difficulty, {GameSource source = GameSource.level}) {
+  void startGame(DifficultLevel difficulty, {GameSource source = GameSource.level, DateTime? dailyDate}) {
     _timerService.stop();
     emit(state.copyWith(
       difficulty: difficulty,
@@ -73,6 +78,8 @@ class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
       elapsedSeconds: 0,
       isPlaying: true,
       gameSource: source,
+      dailyDate: dailyDate,
+      clearDailyDate: dailyDate == null,
     ));
     _timerService.start();
   }

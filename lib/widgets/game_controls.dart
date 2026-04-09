@@ -8,44 +8,57 @@ class GameControls extends StatelessWidget {
   final VoidCallback onHints;
   final VoidCallback onSave;
   final int hintsCount;
+  final Axis axis;
 
   const GameControls({
     super.key,
     required this.onHints,
     required this.onSave,
     required this.hintsCount,
+    this.axis = Axis.horizontal,
   });
 
   @override
   Widget build(BuildContext context) {
+    final saveBtn = _ControlButton(icon: Icons.save_rounded, onPressed: onSave);
+    final undoBtn = BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
+      builder: (context, state) {
+        return _ControlButton(
+          icon: Icons.undo_rounded,
+          onPressed: context.read<SudokuBoardCubit>().undoLastMove,
+          isEnabled: context.read<SudokuBoardCubit>().canUndo,
+          badgeCount: context.read<SudokuBoardCubit>().canUndo
+              ? context.read<SudokuBoardCubit>().undoMovements
+              : null,
+        );
+      },
+    );
+    final hintBtn = _ControlButton(
+      icon: Icons.lightbulb_rounded,
+      onPressed: onHints,
+      badgeCount: hintsCount,
+    );
+
+    if (axis == Axis.vertical) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          saveBtn,
+          const SizedBox(height: 8),
+          undoBtn,
+          const SizedBox(height: 8),
+          hintBtn,
+        ],
+      );
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          _ControlButton(icon: Icons.save_rounded, onPressed: onSave),
-          Row(
-            children: [
-              BlocBuilder<SudokuBoardCubit, SudokuBoardState>(
-                builder: (context, state) {
-                  return _ControlButton(
-                    icon: Icons.undo_rounded,
-                    onPressed: context.read<SudokuBoardCubit>().undoLastMove,
-                    isEnabled: context.read<SudokuBoardCubit>().canUndo,
-                    badgeCount: context.read<SudokuBoardCubit>().canUndo
-                        ? context.read<SudokuBoardCubit>().undoMovements
-                        : null,
-                  );
-                },
-              ),
-              const SizedBox(width: 8),
-              _ControlButton(
-                icon: Icons.lightbulb_rounded,
-                onPressed: onHints,
-                badgeCount: hintsCount,
-              ),
-            ],
-          ),
+          saveBtn,
+          Row(children: [undoBtn, const SizedBox(width: 8), hintBtn]),
         ],
       ),
     );

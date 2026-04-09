@@ -41,6 +41,19 @@ flutter:
     - assets/cats/
     - assets/halloween/
     - assets/sea_animals/
+    - assets/Overbit-Shadow.otf
+    - assets/Overbit-Regular.otf
+    - assets/NTBrickSans.otf
+  fonts:
+    - family: OverbitRegular
+      fonts:
+        - asset: assets/Overbit-Regular.otf
+    - family: OverbitShadow
+      fonts:
+        - asset: assets/Overbit-Shadow.otf
+    - family: BrickSans
+      fonts:
+        - asset: assets/NTBrickSans.otf
 
 import_sorter:
   emojis: true

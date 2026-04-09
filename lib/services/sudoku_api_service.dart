@@ -65,11 +65,12 @@ class SudokuApiService {
   /// Obtiene el puzzle del día según dificultad
   ///
   /// [difficulty]: Nivel de dificultad (EASY, MEDIUM, HARD, EXPERT, MASTER)
-  static Future<SudokuGame> getDailyGame({String difficulty = 'MEDIUM'}) async {
+  static Future<SudokuGame> getDailyGame({String difficulty = 'MEDIUM', String? date}) async {
     final headers = await _authHeaders();
+    final params = <String, String>{'difficulty': difficulty};
+    if (date != null) params['date'] = date;
     final response = await http.get(
-      Uri.parse('$baseUrl/daily')
-          .replace(queryParameters: {'difficulty': difficulty}),
+      Uri.parse('$baseUrl/daily').replace(queryParameters: params),
       headers: headers,
     );
 
