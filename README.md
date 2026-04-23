@@ -89,21 +89,6 @@ Sincronizados con el backend (`DifficultyLevel` en `sudoku-api/`):
 | MAESTRO | `MASTER` | Rojo |
 | GRAN MAESTRO | `GRANDMASTER` | Púrpura |
 
-## API
-
-Base URL: `https://sudoku-api-production-ff31.up.railway.app/api`
-
-| Endpoint | Auth | Descripción |
-|---|---|---|
-| `GET /health` | No | Health check |
-| `GET /game?difficulty=MEDIUM` | Bearer | Puzzle aleatorio |
-| `GET /daily?difficulty=MEDIUM` | Bearer | Puzzle del día |
-| `GET /stats` | No | Conteo de puzzles por nivel |
-| `POST /validate` | No | Valida tablero |
-| `POST /solve` | No | Resuelve tablero |
-| `POST /auth/register` | Bearer | Registra/actualiza usuario (pendiente) |
-
-El `SudokuApiService` inyecta `Authorization: Bearer <firebase_id_token>` automáticamente si hay sesión activa.
 
 ## Credenciales — qué NO está en git
 

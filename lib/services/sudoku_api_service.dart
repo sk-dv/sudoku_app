@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:sudoku_app/screens/level_selection_screen.dart';
 import 'package:sudoku_app/services/auth_service.dart';
+import 'package:sudoku_app/services/guest_puzzle_service.dart';
 import '../models/sudoku_game.dart';
 
 class SudokuApiService {
@@ -47,12 +48,19 @@ class SudokuApiService {
   static Future<SudokuGame> getGame({
     DifficultLevel difficulty = DifficultLevel.medium,
   }) async {
-    final headers = await _authHeaders();
+    final token = await AuthService.instance.getIdToken();
+    if (token == null) {
+      return GuestPuzzleService.getGame(difficulty);
+    }
+
     final response = await http.get(
       Uri.parse('$baseUrl/game').replace(
         queryParameters: {'difficulty': difficulty.gameMap()},
       ),
-      headers: headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
     );
 
     if (response.statusCode == 200) {

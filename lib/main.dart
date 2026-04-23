@@ -5,6 +5,7 @@ import 'package:sudoku_app/firebase_options.dart';
 import 'package:sudoku_app/sudoku.dart';
 import 'services/daily_progress_service.dart';
 import 'services/game_save_service.dart';
+import 'services/guest_puzzle_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -12,5 +13,6 @@ void main() async {
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
   await GameSaveService.initialize();
   await DailyProgressService.initialize();
+  await GuestPuzzleService.initialize();
   runApp(const Sudoku());
 }

@@ -2,6 +2,7 @@ import 'package:equatable/equatable.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:sudoku_app/services/auth_service.dart';
+import 'package:sudoku_app/services/guest_puzzle_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 
 String _friendlyAuthError(FirebaseAuthException e) {
@@ -127,7 +128,10 @@ class AuthCubit extends Cubit<AuthState> {
     emit(AuthAuthenticated(user: user));
   }
 
-  void continueAsGuest() => emit(const AuthGuest());
+  void continueAsGuest() {
+    emit(const AuthGuest());
+    GuestPuzzleService.refreshIfEligible();
+  }
 
   Future<void> signOut() async {
     await _authService.signOut();

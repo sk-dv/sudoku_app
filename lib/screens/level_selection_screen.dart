@@ -7,7 +7,6 @@ import 'package:sudoku_app/sudoku_game_cubit.dart';
 import 'package:sudoku_app/cubit/navigation_cubit.dart';
 import 'package:sudoku_app/cubit/game_coordinator_cubit.dart';
 import 'package:sudoku_app/widgets/floating_card.dart';
-import 'package:sudoku_app/widgets/text_shadow.dart';
 
 class LevelSelectionScreen extends StatefulWidget {
   const LevelSelectionScreen({super.key});
@@ -91,10 +90,24 @@ class _LevelSelectionScreenState extends State<LevelSelectionScreen> {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Center(
-            child: BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
-              selector: (state) => state.style.selectedCell,
-              builder: (context, color) {
-                return TextShadow(text: 'SUDOKU', mainColor: color);
+            child: BlocSelector<SudokuGameCubit, SudokuGameState, bool>(
+              selector: (state) => state.style.mode.isDark,
+              builder: (context, isDark) {
+                final color =
+                    isDark ? const Color(0xFFFFFBF0) : const Color(0xFF1A1A2E);
+                final shadow = isDark
+                    ? Colors.black.withValues(alpha: 0.45)
+                    : Colors.black.withValues(alpha: 0.15);
+                return Text(
+                  'SUDOKU',
+                  style: TextStyle(
+                    fontFamily: 'BrickSans',
+                    fontSize: 48,
+                    color: color,
+                    letterSpacing: 4,
+                    shadows: [Shadow(color: shadow, offset: const Offset(4, 4))],
+                  ),
+                );
               },
             ),
           ),
@@ -205,12 +218,10 @@ class _LevelCard extends StatelessWidget {
                 children: [
                   Text(
                     difficulty.level,
-                    style: const TextStyle(
-                      color: Color(0xFFFFFBF0),
-                      fontSize: 17,
-                      letterSpacing: 1.5,
-                      fontWeight: FontWeight.bold,
-                    ),
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          letterSpacing: 1.5,
+                          fontWeight: FontWeight.bold,
+                        ),
                   ),
                   if (count != null) ...[
                     const SizedBox(width: 8),
@@ -219,21 +230,18 @@ class _LevelCard extends StatelessWidget {
                       if (n == null) return const SizedBox.shrink();
                       return Text(
                         '$n',
-                        style: const TextStyle(
-                          color: Color(0xFFFFFBF0),
-                          fontSize: 12,
-                        ),
+                        style: Theme.of(context).textTheme.bodySmall,
                       );
                     }),
                   ],
                 ],
               ),
             ),
-            const Padding(
-              padding: EdgeInsets.only(right: 16),
+            Padding(
+              padding: const EdgeInsets.only(right: 16),
               child: Icon(
                 Icons.arrow_forward_ios_rounded,
-                color: Color(0x66FFFBF0),
+                color: Theme.of(context).colorScheme.onSurface.withValues(alpha: 0.35),
                 size: 13,
               ),
             ),
@@ -367,102 +375,90 @@ class _ContinueGameCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final savedGame = GameSaveService.getLatestSavedGame();
 
-    return BlocSelector<SudokuGameCubit, SudokuGameState, Color>(
-      selector: (state) => state.style.selectedCell,
-      builder: (context, color) {
-        return FloatingCard(
-          elevation: 8,
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    return FloatingCard(
+      elevation: 8,
+      padding: const EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
             children: [
-              Row(
-                children: [
-                  Icon(Icons.history_rounded, color: color, size: 24),
-                  const SizedBox(width: 12),
-                  Expanded(
+              Icon(Icons.history_rounded, color: cs.onSurface, size: 22),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'CONTINUAR JUEGO',
+                  style: tt.titleSmall?.copyWith(
+                    letterSpacing: 2,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (savedGame != null) ...[
+            Text(
+              'Dificultad: ${savedGame.difficulty.level}',
+              style: tt.bodySmall,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              'Pistas restantes: ${savedGame.hintCoordinates.length - savedGame.hintIdx}',
+              style: tt.bodySmall,
+            ),
+          ],
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => onContinue(savedGame!.id),
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      color: cs.primary,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
                     child: Text(
-                      'CONTINUAR JUEGO',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: color,
-                        letterSpacing: 2,
+                      'CONTINUAR',
+                      textAlign: TextAlign.center,
+                      style: tt.labelMedium?.copyWith(
+                        color: cs.onPrimary,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                ],
+                ),
               ),
-              const SizedBox(height: 12),
-              if (savedGame != null) ...[
-                Text(
-                  'Dificultad: ${savedGame.difficulty.level}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: color.withValues(alpha: 0.7),
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  'Pistas: ${savedGame.hintCoordinates.length - savedGame.hintIdx}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: color.withValues(alpha: 0.7),
-                  ),
-                ),
-              ],
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: () => onContinue(savedGame!.id),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          color: color,
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: const Text(
-                          'CONTINUAR',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: GestureDetector(
+                  onTap: onDiscard,
+                  child: Container(
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: cs.onSurface.withValues(alpha: 0.3)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      'DESCARTAR',
+                      textAlign: TextAlign.center,
+                      style: tt.labelMedium?.copyWith(
+                        color: cs.onSurface,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: onDiscard,
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 10),
-                        decoration: BoxDecoration(
-                          border: Border.all(color: color),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          'DESCARTAR',
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            color: color,
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 }

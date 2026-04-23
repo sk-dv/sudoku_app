@@ -6,6 +6,7 @@ import 'package:sudoku_app/models/sudoku_game_model.dart';
 import 'package:sudoku_app/screens/level_selection_screen.dart';
 import 'package:sudoku_app/services/auth_service.dart';
 import 'package:sudoku_app/services/game_save_service.dart';
+import 'package:sudoku_app/services/guest_puzzle_service.dart';
 import 'package:sudoku_app/services/sudoku_api_service.dart';
 import 'package:sudoku_app/services/timer_service.dart';
 
@@ -134,6 +135,8 @@ class GameCoordinatorCubit extends Cubit<GameCoordinatorState> {
         hintsUsed: progress.hintIdx,
         completed: completed,
       ).catchError((_) {});
+    } else if (completed && state.difficulty != null) {
+      GuestPuzzleService.markCompleted(state.difficulty!);
     }
   }
 
